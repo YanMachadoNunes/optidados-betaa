@@ -1,0 +1,57 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"  // <--- AGORA VAI (está fixo aqui)
+}
+
+// 1. Clientes
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?
+  email     String?
+  cpf       String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+}
+
+// 2. Produtos (Estoque)
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  price       Decimal
+  costPrice   Decimal
+  stock       Int      @default(0)
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  saleItems   SaleItem[]
+}
+
+// 3. Vendas
+model Sale {
+  id            String      @id @default(uuid())
+  customerId    String?
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  totalAmount   Decimal
+  status        String      @default("PENDING")
+  paymentMethod String?
+  createdAt     DateTime    @default(now())
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Decimal
+}

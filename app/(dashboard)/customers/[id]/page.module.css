@@ -1,0 +1,208 @@
+/* app/customers/[id]/page.module.css */
+
+.pageWrapper {
+    background-color: #f8fafc; /* Fundo Gelo */
+    min-height: 100vh;
+    padding: 4rem 2rem;
+    font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px; /* Um pouco mais largo que o formulário */
+}
+
+/* Cabeçalho */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.backLink {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    background-color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.backLink:hover {
+    color: #0f172a;
+    border-color: #cbd5e1;
+    transform: translateX(-3px);
+}
+
+.headerTitle {
+    font-size: 0.85rem;
+    font-family: monospace;
+    color: #94a3b8;
+    background: #e2e8f0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* O Card Principal */
+.card {
+    background-color: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+/* Topo do Card (Gradiente sutil) */
+.cardTop {
+    padding: 3rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.profileBlock {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.avatar {
+    width: 5rem;
+    height: 5rem;
+    background: linear-gradient(135deg, #dbeafe, #eff6ff);
+    color: #2563eb;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.5rem;
+    border: 2px solid white;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
+}
+
+.name {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+    margin-bottom: 0.25rem;
+}
+
+.activeBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background-color: #dcfce7;
+    color: #166534;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Ações (Botões) */
+.actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.editButton {
+    padding: 0.75rem 1.5rem;
+    background-color: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    color: #334155;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.editButton:hover {
+    border-color: #3b82f6;
+    color: #2563eb;
+    background-color: #eff6ff;
+}
+
+.deleteButton {
+    padding: 0.75rem 1.5rem;
+    background-color: #fef2f2;
+    border: 1px solid #fee2e2;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    color: #dc2626;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.deleteButton:hover {
+    background-color: #fee2e2;
+    border-color: #fecaca;
+}
+
+/* Corpo do Card */
+.cardBody {
+    padding: 3rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+}
+
+@media (min-width: 768px) {
+    .cardBody {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.sectionTitle {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 0.5rem;
+}
+
+.infoGroup {
+    margin-bottom: 1.5rem;
+}
+
+.label {
+    display: block;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+}
+
+.value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.valueMono {
+    font-family: monospace;
+    background: #f8fafc;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.95rem;
+    color: #475569;
+}

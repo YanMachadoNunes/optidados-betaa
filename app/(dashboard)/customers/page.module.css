@@ -1,0 +1,243 @@
+/* app/customers/page.module.css */
+
+/* Força um fundo claro para esta página e dá espaço */
+.pageWrapper {
+    background-color: #f8fafc; /* Slate 50 - Fundo Gelo */
+    min-height: 100vh;
+    padding: 4rem 2rem;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+}
+
+/* --- Cabeçalho Imperial --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 4rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.titleBlock {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent; /* Fallback */
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Botão de Adicionar Premium */
+.addButton {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.addButton:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 35px -10px rgba(37, 99, 235, 0.6);
+}
+
+/* --- Grid de Cards Flutuantes --- */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 2.5rem;
+}
+
+/* O Card Individual */
+.card {
+    background-color: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow:
+        0 10px 30px -5px rgba(0, 0, 0, 0.05),
+        0 4px 10px -5px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column; /* AQUI ESTAVA O ERRO (estava flex-col) */
+    gap: 2rem;
+}
+
+.card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.25);
+    border-color: #bfdbfe;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, transparent, #eff6ff);
+    border-radius: 0 0 0 100%;
+    z-index: 0;
+}
+
+/* Conteúdo do Card (Topo) */
+.cardTop {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    position: relative;
+    z-index: 1;
+}
+
+.avatar {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, #dbeafe, #eff6ff);
+    color: #2563eb;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
+    border: 2px solid white;
+    flex-shrink: 0; /* Garante que o avatar não amasse */
+}
+
+.clientInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.clientName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    text-decoration: none;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+    transition: color 0.2s;
+}
+
+.clientName:hover {
+    color: #2563eb;
+}
+
+.clientEmail {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+    word-break: break-all; /* Previne que email gigante quebre o layout */
+}
+
+/* Conteúdo do Card (Base) */
+.cardBottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    position: relative;
+    z-index: 1;
+    margin-top: auto; /* Empurra para o fundo se sobrar espaço */
+}
+
+.metaInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.clientPhone {
+    font-size: 0.95rem;
+    color: #334155;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.clientCpf {
+    font-size: 0.75rem;
+    color: #475569;
+    font-family: monospace;
+    background-color: #f1f5f9;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    align-self: flex-start;
+}
+
+.deleteButton {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 2px solid #f1f5f9;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #cbd5e1;
+}
+
+.deleteButton:hover {
+    background-color: #fef2f2;
+    border-color: #fee2e2;
+    color: #ef4444;
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2);
+}
+
+.emptyState {
+    grid-column: 1 / -1;
+    padding: 6rem;
+    text-align: center;
+    background-color: white;
+    border-radius: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+    border: 2px dashed #e2e8f0;
+}
+
+.emptyTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1rem;
+}
