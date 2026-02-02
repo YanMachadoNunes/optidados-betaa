@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"  // <--- AGORA VAI (está fixo aqui)
+  provider = "postgresql"      // <--- Com o "g"
+  url      = env("DATABASE_URL") // <--- Com o parênteses fechando
 }
 
 // 1. Clientes
@@ -19,6 +19,7 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   sales     Sale[]
+  prescriptions Prescription[]  // <--- ADICIONE ISSO AQUI
 }
 
 // 2. Produtos (Estoque)
@@ -54,4 +55,28 @@ model SaleItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
   unitPrice Decimal
+}
+
+model Prescription {
+  id            String   @id @default(uuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+
+  doctorName    String?
+  crm           String?
+
+  // Olho Direito
+  odSpherical   Decimal  @default(0)
+  odCylindrical Decimal  @default(0)
+  odAxis        Int      @default(0)
+
+  // Olho Esquerdo
+  oeSpherical   Decimal  @default(0)
+  oeCylindrical Decimal  @default(0)
+  oeAxis        Int      @default(0)
+
+  addition      Decimal  @default(0)
+  examDate      DateTime @default(now())
+  dueDate       DateTime?
+  createdAt     DateTime @default(now())
 }

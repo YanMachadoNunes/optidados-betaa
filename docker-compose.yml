@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15 # A versão do banco (o elefante)
+    container_name: optigestao_db # Nome do container pra ficar bonitinho
+    restart: always # Se cair, levanta sozinho
+    ports:
+      - "5432:5432" # Porta do PC : Porta do Container
+    environment:
+      POSTGRES_USER: admin # Seu usuário
+      POSTGRES_PASSWORD: admin # Sua senha (super segura kkk)
+      POSTGRES_DB: optigestao # Nome do banco
+    volumes:
+      - pgdata:/var/lib/postgresql/data # Isso garante que os dados não somem se desligar o PC
+
+volumes:
+  pgdata: # Onde os dados ficam salvos de verdade

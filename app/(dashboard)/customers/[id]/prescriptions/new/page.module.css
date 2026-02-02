@@ -1,0 +1,160 @@
+/* app/customers/[id]/prescriptions/new/page.module.css */
+
+.pageWrapper {
+    background-color: #f8fafc;
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 1000px;
+}
+
+.card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.header {
+    padding: 2rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fff;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* O Grid Ótico */
+.opticalGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+}
+
+@media (min-width: 768px) {
+    .opticalGrid {
+        grid-template-columns: 1fr 1fr; /* Divide a tela em 2 */
+    }
+}
+
+/* Blocos dos Olhos */
+.eyeBlock {
+    padding: 2rem;
+}
+
+.rightEye {
+    background-color: #f8fafc; /* Levemente cinza pra diferenciar */
+    border-right: 1px solid #e2e8f0;
+}
+
+.leftEye {
+    background-color: #fff;
+}
+
+.eyeTitle {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badgeOD {
+    color: #2563eb;
+    background: #dbeafe;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.badgeOE {
+    color: #16a34a;
+    background: #dcfce7;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Inputs */
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* Esférico, Cilíndrico, Eixo */
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.input {
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-family: monospace; /* Fonte monoespaçada pra números */
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Footer com Botão */
+.footer {
+    padding: 2rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.btnSave {
+    background: #0f172a;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+.btnSave:hover {
+    background: #1e293b;
+}
+
+.btnCancel {
+    padding: 0.75rem 1.5rem;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+}

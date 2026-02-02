@@ -3,6 +3,7 @@
 import { prisma } from "../../lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { Prisma } from "@prisma/client"; // Adicione esta linha!
 
 export async function createCustomer(formData: FormData) {
   const name = formData.get("name") as string;
@@ -10,13 +11,27 @@ export async function createCustomer(formData: FormData) {
   const phone = formData.get("phone") as string;
   const cpf = formData.get("cpf") as string;
 
-  // Aqui o Prisma materializa a energia em dados
-  await prisma.customer.create({
-    data: { name, email, phone, cpf },
-  });
+  try {
+    // Tenta materializar a energia em dados
+    await prisma.customer.create({
+      data: { name, email, phone, cpf },
+    });
+  } catch (error) {
+    // Se o erro for de unicidade (P2002)
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        // Em Server Actions, você pode retornar um objeto com o erro
+        // para o seu componente de formulário exibir uma mensagem.
+        return { error: "Este CPF já está cadastrado no sistema." };
+      }
+    }
+    // Se for outro erro, lança para o Next.js tratar
+    throw error;
+  }
 
-  revalidatePath("/customers"); // Atualiza a lista
-  redirect("/customers"); // Te joga de volta pra lista
+  // Só chega aqui se a criação deu certo
+  revalidatePath("/customers");
+  redirect("/customers");
 }
 
 // Adicione isso no final do arquivo actions.ts
@@ -46,4 +61,52 @@ export async function updateCustomer(formData: FormData) {
   revalidatePath("/customers");
   revalidatePath(`/customers/${id}`); // Atualiza também a página de detalhes
   redirect(`/customers/${id}`); // Volta para o Dossiê do cliente atualizado
+}
+
+// Adicione isso no final de app/customers/actions.ts
+
+export async function createPrescription(formData: FormData) {
+  "use server"; // Garante que roda no servidor
+
+  const customerId = formData.get("customerId") as string;
+
+  // Função auxiliar para converter texto vazio em 0 (zero)
+  const parseDecimal = (value: any) => {
+    if (!value || value === "") return 0;
+    return Number(value); // Converte " -2.50 " para -2.5
+  };
+
+  const parseIntVal = (value: any) => {
+    if (!value || value === "") return 0;
+    return parseInt(value);
+  };
+
+  await prisma.prescription.create({
+    data: {
+      customerId,
+      doctorName: formData.get("doctorName") as string,
+
+      // Olho Direito (OD)
+      odSpherical: parseDecimal(formData.get("odSpherical")),
+      odCylindrical: parseDecimal(formData.get("odCylindrical")),
+      odAxis: parseIntVal(formData.get("odAxis")),
+
+      // Olho Esquerdo (OE)
+      oeSpherical: parseDecimal(formData.get("oeSpherical")),
+      oeCylindrical: parseDecimal(formData.get("oeCylindrical")),
+      oeAxis: parseIntVal(formData.get("oeAxis")),
+
+      // Adição
+      addition: parseDecimal(formData.get("addition")),
+
+      // Datas
+      examDate: new Date((formData.get("examDate") as string) || new Date()),
+      dueDate: formData.get("dueDate")
+        ? new Date(formData.get("dueDate") as string)
+        : null,
+    },
+  });
+
+  revalidatePath(`/customers/${customerId}`);
+  redirect(`/customers/${customerId}`); // Volta para o dossiê do cliente
 }
