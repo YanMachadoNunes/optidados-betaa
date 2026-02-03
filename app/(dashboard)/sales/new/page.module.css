@@ -1,0 +1,235 @@
+/* app/(dashboard)/sales/new/sales.module.css */
+
+.pageWrapper {
+    background-color: #f8fafc;
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px; /* Mais largo pra caber produto e carrinho */
+    display: grid;
+    grid-template-columns: 1fr 350px; /* Coluna produtos (larga) | Coluna carrinho (fixa) */
+    gap: 2rem;
+}
+
+/* Responsividade: vira uma coluna só no mobile */
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Área de Busca e Produtos */
+.productsArea {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.searchCard {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.searchInput {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+
+    box-sizing: border-box;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.resultsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.productCard {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.productCard:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.productName {
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+.productMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto; /* Empurra pro fundo */
+}
+
+.price {
+    font-weight: 700;
+    color: #166534; /* Verde dinheiro */
+}
+
+.stockBadge {
+    font-size: 0.75rem;
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Coluna do Carrinho (Direita) */
+.cartArea {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+}
+
+.cartCard {
+    background: white;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 4rem);
+}
+
+.cartHeader {
+    background: #0f172a;
+    color: white;
+    padding: 1.5rem;
+}
+
+.cartTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cartBody {
+    padding: 1rem;
+    flex: 1;
+    overflow-y: auto; /* Scroll se tiver muitos itens */
+}
+
+.cartItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.itemInfo {
+    flex: 1;
+}
+
+.itemName {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+    display: block;
+}
+
+.itemPrice {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.itemActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qtyBtn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #64748b;
+}
+
+.qtyBtn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.cartFooter {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.totalRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+}
+
+.checkoutButton {
+    width: 100%;
+    padding: 1rem;
+    background: #16a34a; /* Verde Sucesso */
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checkoutButton:hover {
+    background: #15803d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.3);
+}
+
+.checkoutButton:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}

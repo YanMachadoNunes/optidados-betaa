@@ -35,26 +35,30 @@ model Product {
   saleItems   SaleItem[]
 }
 
-// 3. Vendas
 model Sale {
-  id            String      @id @default(uuid())
+  id            String    @id @default(uuid())  // <--- ESSA LINHA É OBRIGATÓRIA
   customerId    String?
-  customer      Customer?   @relation(fields: [customerId], references: [id])
-  totalAmount   Decimal
-  status        String      @default("PENDING")
+  customer      Customer? @relation(fields: [customerId], references: [id])
+
+  totalAmount   Decimal   @db.Decimal(10, 2)
+  status        String    @default("PENDING")
   paymentMethod String?
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime  @default(now())
+
   items         SaleItem[]
 }
 
 model SaleItem {
-  id        String  @id @default(uuid())
-  saleId    String
-  sale      Sale    @relation(fields: [saleId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
-  unitPrice Decimal
+  id          String   @id @default(uuid())
+  saleId      String
+  // ADICIONADO: onDelete: Cascade (Se apagar a venda, apaga os itens)
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2) // Força 2 casas decimais
 }
 
 model Prescription {
@@ -80,3 +84,5 @@ model Prescription {
   dueDate       DateTime?
   createdAt     DateTime @default(now())
 }
+
+// No seu schema.prisma
