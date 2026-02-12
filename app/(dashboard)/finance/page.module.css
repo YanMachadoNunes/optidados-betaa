@@ -424,6 +424,43 @@
     transform: translateY(-2px);
 }
 
+/* Chart Card */
+.chartCard {
+    background: var(--bg-card);
+    border-radius: 14px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.chartHeader {
+    margin-bottom: 1.5rem;
+}
+
+.chartTitle {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+}
+
+.chartSubtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.chartContainer {
+    width: 100%;
+    height: 350px;
+}
+
+.chart {
+    width: 100%;
+    height: 100%;
+}
+
 /* Responsivo */
 @media (max-width: 1024px) {
     .summaryGrid {
@@ -440,6 +477,10 @@
     
     .sidebarCard {
         flex: 1;
+    }
+    
+    .chartContainer {
+        height: 300px;
     }
 }
 

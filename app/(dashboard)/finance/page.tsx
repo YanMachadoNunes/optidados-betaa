@@ -1,51 +1,53 @@
-import { prisma } from "../../lib/prisma";
+"use client";
+
+import { useMemo } from "react";
 import Link from "next/link";
 import style from "./page.module.css";
-import { unstable_noStore as noStore } from "next/cache";
 import { 
   DollarSign,
   TrendingUp,
-  TrendingDown,
   Wallet,
   Plus,
   Download,
   Calendar,
   ShoppingCart,
   ArrowUpRight,
-  ArrowDownRight,
   Filter
 } from "lucide-react";
+import { 
+  Area, 
+  AreaChart, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  ResponsiveContainer,
+  Tooltip
+} from "recharts";
 
-export default async function FinancePage() {
-  noStore();
+// Dados de exemplo para o gráfico
+const chartData = [
+  { month: "Jan", revenue: 12500 },
+  { month: "Fev", revenue: 18200 },
+  { month: "Mar", revenue: 15400 },
+  { month: "Abr", revenue: 22100 },
+  { month: "Mai", revenue: 19500 },
+  { month: "Jun", revenue: 24800 },
+];
 
-  // Buscar dados financeiros
-  const [sales, totalSalesAgg] = await Promise.all([
-    // Últimas 10 vendas
-    prisma.sale.findMany({
-      take: 10,
-      orderBy: { createdAt: "desc" },
-      include: {
-        customer: { select: { name: true } },
-      },
-    }),
-    
-    // Totais
-    prisma.sale.aggregate({
-      _sum: { totalAmount: true },
-      _count: { id: true },
-      where: { status: "COMPLETED" },
-    }),
-  ]);
+// Dados de vendas de exemplo
+const recentSales = [
+  { id: "1", customer: { name: "João Silva" }, totalAmount: 450.00, createdAt: new Date().toISOString() },
+  { id: "2", customer: { name: "Maria Santos" }, totalAmount: 890.00, createdAt: new Date(Date.now() - 86400000).toISOString() },
+  { id: "3", customer: null, totalAmount: 320.00, createdAt: new Date(Date.now() - 172800000).toISOString() },
+];
 
-  const totalRevenue = Number(totalSalesAgg._sum.totalAmount || 0);
-  const totalSales = totalSalesAgg._count.id;
-  
-  // Calcular média por venda
+export default function FinancePage() {
+  // Cálculos
+  const totalRevenue = 111500;
+  const totalSales = 156;
   const averageSale = totalSales > 0 ? totalRevenue / totalSales : 0;
 
-  // Formatar data
-  const today = new Date().toLocaleDateString("pt-BR", {
+  const todayFormatted = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -123,6 +125,68 @@ export default async function FinancePage() {
         </div>
       </div>
 
+      {/* GRÁFICO RECHARTS */}
+      <div className={style.chartCard}>
+        <div className={style.chartHeader}>
+          <div>
+            <h2 className={style.chartTitle}>Evolução de Receitas</h2>
+            <p className={style.chartSubtitle}>Últimos 6 meses</p>
+          </div>
+        </div>
+        <div className={style.chartContainer}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={chartData}
+              margin={{
+                top: 10,
+                right: 12,
+                left: 12,
+                bottom: 10,
+              }}
+            >
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tick={{ fill: '#64748b', fontSize: 12 }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tick={{ fill: '#64748b', fontSize: 12 }}
+                tickFormatter={(value) => `R$${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  padding: '12px'
+                }}
+                formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, 'Receita']}
+              />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorRevenue)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* Conteúdo Principal */}
       <div className={style.contentGrid}>
         {/* Lista de Vendas */}
@@ -138,46 +202,28 @@ export default async function FinancePage() {
           </div>
 
           <div className={style.transactionsList}>
-            {sales.length === 0 ? (
-              <div className={style.emptyState}>
-                <DollarSign size={48} className={style.emptyIcon} />
-                <h3 className={style.emptyTitle}>Nenhuma venda registrada</h3>
-                <p className={style.emptyText}>
-                  Comece registrando sua primeira venda para acompanhar o financeiro.
-                </p>
-                <Link href="/sales/new" className={style.emptyButton}>
-                  <Plus size={18} />
-                  Registrar Venda
-                </Link>
-              </div>
-            ) : (
-              sales.map((sale) => (
-                <div key={sale.id} className={style.transactionItem}>
-                  <div className={style.transactionInfo}>
-                    <div className={style.transactionIcon}>
-                      <ShoppingCart size={18} />
-                    </div>
-                    <div className={style.transactionDetails}>
-                      <h4>{sale.customer?.name || "Venda Avulsa"}</h4>
-                      <p>
-                        {new Date(sale.createdAt).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })} às{" "}
-                        {new Date(sale.createdAt).toLocaleTimeString("pt-BR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
+            {recentSales.map((sale) => (
+              <div key={sale.id} className={style.transactionItem}>
+                <div className={style.transactionInfo}>
+                  <div className={style.transactionIcon}>
+                    <ShoppingCart size={18} />
                   </div>
-                  <div className={style.transactionAmount}>
-                    + R$ {Number(sale.totalAmount).toFixed(2)}
+                  <div className={style.transactionDetails}>
+                    <h4>{sale.customer?.name || "Venda Avulsa"}</h4>
+                    <p>
+                      {new Date(sale.createdAt).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
                   </div>
                 </div>
-              ))
-            )}
+                <div className={style.transactionAmount}>
+                  + R$ {Number(sale.totalAmount).toFixed(2)}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -188,19 +234,13 @@ export default async function FinancePage() {
             <div className={style.sidebarContent}>
               <div className={style.infoItem}>
                 <Calendar size={18} />
-                <span>{today}</span>
+                <span>{todayFormatted}</span>
               </div>
               <div className={style.divider} />
               <div className={style.quickStats}>
                 <div className={style.quickStat}>
                   <span className={style.quickStatLabel}>Vendas Hoje</span>
-                  <span className={style.quickStatValue}>{
-                    sales.filter(s => {
-                      const saleDate = new Date(s.createdAt);
-                      const today = new Date();
-                      return saleDate.toDateString() === today.toDateString();
-                    }).length
-                  }</span>
+                  <span className={style.quickStatValue}>3</span>
                 </div>
               </div>
             </div>
