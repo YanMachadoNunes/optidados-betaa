@@ -3,12 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPrescription } from "../../../actions"; // Ajuste o import
 import style from "./page.module.css";
+import { unstable_noStore as noStore } from "next/cache";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 export default async function NewPrescriptionPage({ params }: Props) {
+  noStore();
   const { id } = await params;
 
   // Busca o cliente só pra mostrar o nome no topo
@@ -66,6 +68,20 @@ export default async function NewPrescriptionPage({ params }: Props) {
               <label className={style.label}>Validade (Opcional)</label>
               <input type="date" name="dueDate" className={style.input} />
             </div>
+          </div>
+
+          {/* Campo de Anexo */}
+          <div className={style.attachmentSection}>
+            <label className={style.label}>Anexar Receita (PDF ou Imagem)</label>
+            <input
+              type="file"
+              name="attachment"
+              accept=".pdf,.jpg,.jpeg,.png"
+              className={style.fileInput}
+            />
+            <span className={style.fileHint}>
+              Aceita arquivos PDF, JPG ou PNG (máx. 5MB)
+            </span>
           </div>
 
           {/* O Grande Grid Ótico */}

@@ -9,7 +9,7 @@ export default function NewCustomerPage() {
         {/* Cabeçalho */}
         <div className={style.header}>
           <Link href="/customers" className={style.backLink}>
-            <span>←</span> Voltar para Lista
+            ← Voltar para Lista
           </Link>
           <h1 className={style.title}>Cadastrar Novo Cliente</h1>
         </div>

@@ -47,6 +47,22 @@
     transform: translateX(-3px);
 }
 
+.backLinkSecondary {
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    padding: 0.5rem 1rem;
+}
+
+.backLinkSecondary:hover {
+    color: #64748b;
+}
+
 .title {
     font-size: 2rem;
     font-weight: 800;

@@ -26,7 +26,7 @@ export async function createCustomer(formData: FormData) {
       if (error.code === "P2002") {
         // Em Server Actions, você pode retornar um objeto com o erro
         // para o seu componente de formulário exibir uma mensagem.
-        return { error: "Este CPF já está cadastrado no sistema." };
+        throw new Error("Este CPF já está cadastrado no sistema.");
       }
     }
     // Se for outro erro, lança para o Next.js tratar

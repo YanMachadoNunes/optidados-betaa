@@ -1,135 +1,198 @@
-import { prisma } from "../lib/prisma"; // Subindo um nível do (dashboard) para a raiz, depois lib
-// SE der erro de caminho, tente: import { prisma } from "@/lib/prisma"; se tiver alias configurado.
-// Mas pelo seu print: "../../lib/prisma" se estiver dentro de uma pasta, ou "../lib/prisma" se estiver na raiz do group.
-
+import { prisma } from "../lib/prisma";
 import Link from "next/link";
 import style from "./home.module.css";
+import { unstable_noStore as noStore } from "next/cache";
+import { 
+  LayoutDashboard, 
+  ShoppingCart, 
+  Users, 
+  Package, 
+  TrendingUp,
+  Plus,
+  ArrowRight,
+  DollarSign
+} from "lucide-react";
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 export default async function DashboardPage() {
-  // 1. Buscando dados em PARALELO (Performance Hard Mode)
-  // O Promise.all faz as 4 consultas ao mesmo tempo, em vez de esperar uma por uma.
+  noStore();
+  
+  // Buscando dados em PARALELO
   const [totalSales, totalCustomers, lowStockCount, recentSales] =
     await Promise.all([
-      // A. Soma total das vendas
+      // Soma total das vendas
       prisma.sale.aggregate({
         _sum: { totalAmount: true },
         where: { status: "COMPLETED" },
       }),
 
-      // B. Total de clientes
+      // Total de clientes
       prisma.customer.count(),
 
-      // C. Alerta de Estoque Baixo (menos de 5 itens)
+      // Alerta de Estoque Baixo
       prisma.product.count({
         where: { stock: { lt: 5 } },
       }),
 
-      // D. Últimas 5 vendas para a lista rápida
+      // Últimas 5 vendas
       prisma.sale.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
         include: {
-          customer: { select: { name: true } }, // Traz o nome do cliente
+          customer: { select: { name: true } },
         },
       }),
     ]);
 
   const revenue = Number(totalSales._sum.totalAmount || 0);
 
-  return (
-    <div className={style.pageWrapper}>
-      <div className={style.header}>
-        <h1 className={style.title}>Visão Geral</h1>
-        <p className={style.subtitle}>Bem-vindo de volta, Yan.</p>
-      </div>
+  // Formatar data atual
+  const today = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
-      {/* GRID DE KPIs (Indicadores Chave) */}
+  return (
+    <div className={style.container}>
+      {/* Header */}
+      <header className={style.header}>
+        <div>
+          <h1 className={style.title}>Dashboard</h1>
+          <p className={style.subtitle}>Bem-vindo de volta! Aqui está o resumo do seu negócio.</p>
+        </div>
+        <div className={style.dateBadge}>
+          {today}
+        </div>
+      </header>
+
+      {/* KPIs Grid */}
       <div className={style.kpiGrid}>
-        {/* Card 1: Faturamento */}
-        <div className={style.card}>
-          <span className={style.cardLabel}>Faturamento Total</span>
-          <div className={style.cardValue} style={{ color: "#16a34a" }}>
+        {/* Faturamento */}
+        <div className={`${style.kpiCard} ${style.success}`}>
+          <div className={style.kpiHeader}>
+            <span className={style.kpiLabel}>Faturamento Total</span>
+            <div className={style.kpiIcon}>
+              <TrendingUp size={24} />
+            </div>
+          </div>
+          <div className={style.kpiValue}>
             R$ {revenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </div>
-          <span className={style.cardSub}>Receita acumulada</span>
-        </div>
-
-        {/* Card 2: Clientes */}
-        <div className={style.card}>
-          <span className={style.cardLabel}>Clientes Ativos</span>
-          <div className={style.cardValue}>{totalCustomers}</div>
-          <Link href="/customers" className={style.cardLink}>
-            Ver todos →
+          <span className={style.kpiSub}>Receita acumulada</span>
+          <Link href="/sales" className={style.kpiLink}>
+            Ver detalhes <ArrowRight size={16} />
           </Link>
         </div>
 
-        {/* Card 3: Estoque Crítico */}
-        <div
-          className={style.card}
-          style={{ borderColor: lowStockCount > 0 ? "#fecaca" : "#e2e8f0" }}
-        >
-          <span className={style.cardLabel}>Estoque Baixo</span>
-          <div
-            className={style.cardValue}
-            style={{ color: lowStockCount > 0 ? "#dc2626" : "#0f172a" }}
-          >
-            {lowStockCount}
+        {/* Clientes */}
+        <div className={style.kpiCard}>
+          <div className={style.kpiHeader}>
+            <span className={style.kpiLabel}>Clientes Ativos</span>
+            <div className={style.kpiIcon}>
+              <Users size={24} />
+            </div>
           </div>
-          <span className={style.cardSub}>Produtos precisando reposição</span>
+          <div className={style.kpiValue}>{totalCustomers}</div>
+          <span className={style.kpiSub}>Total cadastrado</span>
+          <Link href="/customers" className={style.kpiLink}>
+            Ver todos <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        {/* Estoque */}
+        <div className={`${style.kpiCard} ${lowStockCount > 0 ? style.danger : style.warning}`}>
+          <div className={style.kpiHeader}>
+            <span className={style.kpiLabel}>Estoque Baixo</span>
+            <div className={style.kpiIcon}>
+              <Package size={24} />
+            </div>
+          </div>
+          <div className={style.kpiValue}>{lowStockCount}</div>
+          <span className={style.kpiSub}>
+            {lowStockCount > 0 ? "Produtos precisam reposição" : "Estoque em dia"}
+          </span>
           {lowStockCount > 0 && (
-            <Link href="/inventory" className={style.alertLink}>
-              Repor Agora
+            <Link href="/inventory" className={style.kpiLink}>
+              Repor agora <ArrowRight size={16} />
             </Link>
           )}
         </div>
       </div>
 
-      {/* AÇÕES RÁPIDAS & HISTÓRICO */}
+      {/* Grid de Seções */}
       <div className={style.sectionGrid}>
-        {/* Coluna 1: Ações */}
-        <div className={style.actionCard}>
-          <h2 className={style.sectionTitle}>Acesso Rápido</h2>
-          <div className={style.buttonsGrid}>
-            <Link href="/sales/new" className={style.primaryButton}>
-              🛒 Nova Venda
+        {/* Ações Rápidas */}
+        <div className={style.card}>
+          <div className={style.cardHeader}>
+            <h2 className={style.cardTitle}>Ações Rápidas</h2>
+          </div>
+          <div className={style.actionsList}>
+            <Link href="/sales/new" className={`${style.actionButton} ${style.primary}`}>
+              <div className={style.actionIcon}>
+                <Plus size={20} />
+              </div>
+              <span>Nova Venda</span>
             </Link>
-            <Link href="/customers" className={style.secondaryButton}>
-              👥 Gerenciar Clientes
+            
+            <Link href="/customers/new" className={`${style.actionButton} ${style.secondary}`}>
+              <div className={style.actionIcon}>
+                <Users size={20} />
+              </div>
+              <span>Cadastrar Cliente</span>
             </Link>
-            <Link href="/inventory/new" className={style.secondaryButton}>
-              📦 Cadastrar Produto
+            
+            <Link href="/inventory/new" className={`${style.actionButton} ${style.secondary}`}>
+              <div className={style.actionIcon}>
+                <Package size={20} />
+              </div>
+              <span>Adicionar Produto</span>
             </Link>
           </div>
         </div>
 
-        {/* Coluna 2: Últimas Vendas */}
-        <div className={style.listCard}>
+        {/* Vendas Recentes */}
+        <div className={style.card}>
           <div className={style.cardHeader}>
-            <h2 className={style.sectionTitle}>Vendas Recentes</h2>
+            <h2 className={style.cardTitle}>Vendas Recentes</h2>
             <Link href="/sales" className={style.viewAll}>
-              Ver tudo
+              Ver todas
             </Link>
           </div>
 
-          <div className={style.list}>
+          <div className={style.salesList}>
             {recentSales.length === 0 ? (
-              <p className={style.empty}>Nenhuma venda registrada hoje.</p>
+              <div className={style.emptyState}>
+                <p>Nenhuma venda registrada ainda.</p>
+              </div>
             ) : (
               recentSales.map((sale) => (
-                <div key={sale.id} className={style.listItem}>
-                  <div>
-                    <div className={style.itemTitle}>
-                      {sale.customer ? sale.customer.name : "Venda Avulsa"}
+                <div key={sale.id} className={style.saleItem}>
+                  <div className={style.saleInfo}>
+                    <div className={style.saleAvatar}>
+                      {getInitials(sale.customer?.name || "VA")}
                     </div>
-                    <div className={style.itemDate}>
-                      {new Date(sale.createdAt).toLocaleDateString("pt-BR")} às{" "}
-                      {new Date(sale.createdAt).toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <div className={style.saleDetails}>
+                      <h4>{sale.customer?.name || "Venda Avulsa"}</h4>
+                      <p>
+                        {new Date(sale.createdAt).toLocaleDateString("pt-BR")} às{" "}
+                        {new Date(sale.createdAt).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
                     </div>
                   </div>
-                  <div className={style.itemPrice}>
+                  <div className={style.saleAmount}>
                     + R$ {Number(sale.totalAmount).toFixed(2)}
                   </div>
                 </div>

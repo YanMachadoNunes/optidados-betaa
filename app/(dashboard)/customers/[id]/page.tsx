@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteCustomer } from "../actions";
 import style from "./page.module.css"; // Importando o CSS do Dossie
+import { unstable_noStore as noStore } from "next/cache";
 
 interface Props {
   params: Promise<{
@@ -19,6 +20,7 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 export default async function CustomerDetailsPage({ params }: Props) {
+  noStore();
   const { id } = await params;
 
   const customer = await prisma.customer.findUnique({

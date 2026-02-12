@@ -3,6 +3,7 @@ import { updateCustomer } from "../../actions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import style from "./page.module.css";
+import { unstable_noStore as noStore } from "next/cache";
 
 // 1. Definição da tipagem para os parâmetros dinâmicos (Next.js 15+)
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
  * O uso de async na exportação padrão é o padrão para Server Components.
  */
 export default async function Page({ params }: Props) {
+  noStore();
   // 2. Desembrulha a Promise dos parâmetros (Obrigatório nas versões recentes)
   const { id } = await params;
 
@@ -35,7 +37,7 @@ export default async function Page({ params }: Props) {
         {/* Cabeçalho de Navegação */}
         <div className={style.header}>
           <Link href="/customers" className={style.backLink}>
-            <span>←</span> Cancelar e Voltar
+            ← Voltar para Lista
           </Link>
           <h1 className={style.title}>Editar Cliente</h1>
         </div>

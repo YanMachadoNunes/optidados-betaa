@@ -2,8 +2,10 @@ import { prisma } from "../../../lib/prisma"; // Caminho relativo para sua lib
 import SalesForm from "./sales-form";
 import style from "./page.module.css";
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 
 export default async function NewSalePage() {
+  noStore();
   // 1. Buscar Produtos (apenas os ativos e com estoque, opcionalmente)
   const productsRaw = await prisma.product.findMany({
     orderBy: { name: "asc" },

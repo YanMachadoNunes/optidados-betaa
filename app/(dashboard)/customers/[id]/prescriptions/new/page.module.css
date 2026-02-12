@@ -43,7 +43,7 @@
 .opticalGrid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: 1rem;
 }
 
 @media (min-width: 768px) {
@@ -157,4 +157,53 @@
     color: #64748b;
     text-decoration: none;
     font-weight: 600;
+}
+
+/* Seção de Anexo */
+.attachmentSection {
+    padding: 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.fileInput {
+    padding: 0.75rem;
+    border: 2px dashed #cbd5e1;
+    border-radius: 0.5rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.fileInput:hover {
+    border-color: #3b82f6;
+    background: #f8fafc;
+}
+
+.fileHint {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* Botão Voltar ao Dashboard */
+.headerTop {
+    margin-bottom: 1rem;
+}
+
+.backLink {
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s;
+}
+
+.backLink:hover {
+    color: #0f172a;
 }

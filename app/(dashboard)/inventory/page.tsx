@@ -1,97 +1,98 @@
+import styles from "./page.module.css";
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
-import { deleteProduct } from "../customers/actions";
-import style from "./page.module.css"; // Vamos criar esse CSS já já
+import { unstable_noStore as noStore } from "next/cache";
 
 export default async function InventoryPage() {
+  noStore();
+  // Busca todos os produtos cadastrados
   const products = await prisma.product.findMany({
     orderBy: { name: "asc" },
   });
 
+  // Cálculos rápidos para o Comandante
+  const totalProducts = products.length;
+  const lowStockCount = products.filter((p) => p.stock <= 5).length; // Alerta para menos de 5 unidades
+
   return (
-    <div className={style.pageWrapper}>
-      <div className={style.container}>
-        {/* Cabeçalho */}
-        <div className={style.header}>
+    <div className={styles.pageWrapper}>
+      <div className={styles.container}>
+        <header className={styles.header}>
           <div>
-            <h1 className={style.title}>Gestão de Estoque</h1>
-            <p className={style.subtitle}>
-              {products.length} produtos cadastrados
+            <h1 className={styles.title}>Gerenciar Estoque</h1>
+            <p className={styles.subtitle}>
+              Controle total de produtos e reposição.
             </p>
           </div>
-          <Link href="/inventory/new" className={style.newButton}>
+          <Link href="/inventory/new" className={styles.newButton}>
             + Novo Produto
           </Link>
+        </header>
+
+        {/* MÉTRICAS DE ESTOQUE */}
+        <div className={styles.metricsRow}>
+          <div className={styles.miniCard}>
+            <span className={styles.label}>Total de Itens</span>
+            <span className={styles.value}>{totalProducts}</span>
+          </div>
+          <div
+            className={`${styles.miniCard} ${lowStockCount > 0 ? styles.alertBorder : ""}`}
+          >
+            <span className={styles.label}>Estoque Baixo</span>
+            <span
+              className={`${styles.value} ${lowStockCount > 0 ? styles.redText : ""}`}
+            >
+              {lowStockCount}
+            </span>
+          </div>
         </div>
 
-        {/* Tabela de Produtos */}
-        <div className={style.card}>
-          <table className={style.table}>
+        {/* TABELA DE PRODUTOS */}
+        <section className={styles.card}>
+          <table className={styles.table}>
             <thead>
               <tr>
                 <th>Produto</th>
                 <th>Categoria</th>
-                <th>Custo</th>
-                <th>Venda</th>
+                <th>Preço Venda</th>
                 <th>Estoque</th>
-                <th>Ações</th>
+                <th className={styles.textRight}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
                 <tr key={product.id}>
-                  <td style={{ fontWeight: 600 }}>{product.name}</td>
+                  <td style={{ fontWeight: 700 }}>{product.name}</td>
                   <td>
-                    <span className={style.categoryBadge}>
+                    <span className={styles.categoryBadge}>
                       {product.category}
                     </span>
-                  </td>
-                  <td className={style.mono}>
-                    R$ {Number(product.costPrice).toFixed(2)}
-                  </td>
-                  <td className={style.mono} style={{ color: "#166534" }}>
-                    R$ {Number(product.price).toFixed(2)}
-                  </td>
-                  <td>
+                    <td className={styles.mono}>
+                      {Number(product.price ?? 0).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </td>
                     <span
                       className={
-                        product.stock < 5 ? style.lowStock : style.goodStock
+                        product.stock <= 5 ? styles.lowStock : styles.goodStock
                       }
                     >
-                      {product.stock} un
+                      {product.stock} unidades
                     </span>
                   </td>
-                  <td>
-                    <form
-                      action={async () => {
-                        "use server";
-                        await deleteProduct(product.id);
-                      }}
-                    >
-                      <button type="submit" className={style.deleteBtn}>
-                        Excluir
-                      </button>
-                    </form>
+                  <td className={styles.textRight}>
+                    <button className={styles.editBtn}>Editar</button>
                   </td>
                 </tr>
               ))}
-              {products.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    style={{
-                      textAlign: "center",
-                      padding: "2rem",
-                      color: "#64748b",
-                    }}
-                  >
-                    Nenhum produto no estoque. Comece cadastrando um!
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
-        </div>
+
+          {products.length === 0 && (
+            <div className={styles.emptyState}>Nenhum produto cadastrado.</div>
+          )}
+        </section>
       </div>
     </div>
   );

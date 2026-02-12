@@ -1,0 +1,81 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Users,
+  Package,
+  ShoppingCart,
+  DollarSign,
+  ChevronLeft,
+  ChevronRight,
+  User,
+} from "lucide-react";
+import styles from "./sidebar.module.css";
+import { useSidebar } from "../context/SidebarContext";
+
+const menuItems = [
+  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: Users, label: "Clientes", path: "/customers" },
+  { icon: Package, label: "Estoque", path: "/inventory" },
+  { icon: ShoppingCart, label: "Vendas", path: "/sales" },
+  { icon: DollarSign, label: "Financeiro", path: "/finance" },
+];
+
+export function Sidebar() {
+  const pathname = usePathname();
+  const { isCollapsed, toggleSidebar } = useSidebar();
+
+  return (
+    <aside
+      className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
+    >
+      {/* Cabeçalho com Logo */}
+      <div className={styles.header}>
+        <div className={styles.logo}>
+          <div className={styles.logoIcon}>O</div>
+          {!isCollapsed && <span className={styles.logoText}>OptiGestão</span>}
+        </div>
+
+        {/* Botão de Minimizar */}
+        <button onClick={toggleSidebar} className={styles.collapseBtn}>
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
+      </div>
+
+      <nav className={styles.nav}>
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.path;
+
+          return (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`${styles.link} ${isActive ? styles.active : ""}`}
+              title={isCollapsed ? item.label : ""}
+            >
+              <Icon size={20} />
+              {!isCollapsed && (
+                <span className={styles.label}>{item.label}</span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className={styles.footer}>
+        <div className={styles.avatar}>
+          <User size={18} />
+        </div>
+        {!isCollapsed && (
+          <div className={styles.user}>
+            <span className={styles.userName}>Administrador</span>
+            <span className={styles.userRole}>Ótica</span>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
