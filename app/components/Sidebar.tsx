@@ -12,6 +12,7 @@ import {
   ChevronRight,
   User,
   LogOut,
+  Settings,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import styles from "./sidebar.module.css";
@@ -23,6 +24,7 @@ const menuItems = [
   { icon: Package, label: "Estoque", path: "/inventory" },
   { icon: ShoppingCart, label: "Vendas", path: "/sales" },
   { icon: DollarSign, label: "Financeiro", path: "/finance" },
+  { icon: Settings, label: "Configurações", path: "/settings" },
 ];
 
 export function Sidebar() {

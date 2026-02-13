@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { Shell } from "./components/Shell"
+import { ThemeProvider } from "./context/ThemeContext"
 
 export default function RootLayout({
   children,
@@ -50,7 +51,9 @@ export default function RootLayout({
     return (
       <html lang="pt-BR">
         <body style={{ margin: 0, padding: 0 }}>
-          {children}
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
         </body>
       </html>
     )
@@ -59,7 +62,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body style={{ margin: 0, padding: 0 }}>
-        <Shell>{children}</Shell>
+        <ThemeProvider>
+          <Shell>{children}</Shell>
+        </ThemeProvider>
       </body>
     </html>
   )
