@@ -10,8 +10,9 @@ import {
   Plus,
   ArrowRight,
   DollarSign,
-  AlertCircle,
-  User
+  Sparkles,
+  Activity,
+  Calendar
 } from "lucide-react";
 
 function getInitials(name: string) {
@@ -60,22 +61,29 @@ export default async function HomePage() {
     weekday: "long",
     day: "numeric",
     month: "long",
+    year: "numeric",
   });
 
   return (
     <div className={style.container}>
-      {/* Header */}
+      {/* Header Premium */}
       <header className={style.header}>
         <div>
-          <h1 className={style.title}>Visão Geral</h1>
-          <p className={style.subtitle}>Acompanhe o desempenho da sua ótica em tempo real.</p>
+          <h1 className={style.title}>
+            <Sparkles size={28} style={{ marginRight: '12px', opacity: 0.8 }} />
+            Visão Geral
+          </h1>
+          <p className={style.subtitle}>
+            Acompanhe o desempenho da sua ótica em tempo real.
+          </p>
         </div>
         <div className={style.dateBadge}>
+          <Calendar size={16} style={{ marginRight: '8px' }} />
           {today}
         </div>
       </header>
 
-      {/* KPIs Grid */}
+      {/* KPIs Grid Premium */}
       <div className={style.kpiGrid}>
         {/* Faturamento */}
         <div className={`${style.kpiCard} ${style.success}`}>
@@ -134,7 +142,10 @@ export default async function HomePage() {
         {/* Ações Rápidas */}
         <div className={style.card}>
           <div className={style.cardHeader}>
-            <h2 className={style.cardTitle}>Ações Rápidas</h2>
+            <h2 className={style.cardTitle}>
+              <Activity size={20} style={{ marginRight: '8px', opacity: 0.8 }} />
+              Ações Rápidas
+            </h2>
           </div>
           <div className={style.actionsList}>
             <Link href="/sales/new" className={`${style.actionButton} ${style.primary}`}>
@@ -149,7 +160,7 @@ export default async function HomePage() {
             
             <Link href="/customers/new" className={`${style.actionButton} ${style.secondary}`}>
               <div className={style.actionIcon}>
-                <User size={20} />
+                <Users size={20} />
               </div>
               <div className={style.actionContent}>
                 <span className={style.actionTitle}>Novo Cliente</span>
@@ -172,7 +183,10 @@ export default async function HomePage() {
         {/* Vendas Recentes */}
         <div className={style.card}>
           <div className={style.cardHeader}>
-            <h2 className={style.cardTitle}>Vendas Recentes</h2>
+            <h2 className={style.cardTitle}>
+              <DollarSign size={20} style={{ marginRight: '8px', opacity: 0.8 }} />
+              Vendas Recentes
+            </h2>
             <Link href="/sales" className={style.viewAll}>
               Ver todas
             </Link>
