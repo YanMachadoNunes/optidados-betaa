@@ -13,7 +13,91 @@
 }
 
 .collapsed {
-    width: 70px;
+    width: 80px;
+}
+
+.collapsed .header {
+    padding: 1.5rem 1rem;
+    justify-content: center;
+}
+
+.collapsed .logo {
+    justify-content: center;
+}
+
+.collapsed .logoIcon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.5rem;
+}
+
+.collapsed .collapseBtn {
+    position: absolute;
+    right: -12px;
+    background: var(--accent-primary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    padding: 0;
+}
+
+.collapsed .nav {
+    padding: 1rem 0.75rem;
+    align-items: center;
+}
+
+.collapsed .link {
+    justify-content: center;
+    padding: 0.875rem;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+}
+
+.collapsed .link svg {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+}
+
+.collapsed .footer {
+    padding: 1rem 0.75rem;
+    align-items: center;
+}
+
+.collapsed .userInfo {
+    justify-content: center;
+    padding: 0.75rem;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+}
+
+.collapsed .avatar {
+    width: 32px;
+    height: 32px;
+}
+
+.collapsed .avatar svg {
+    width: 18px;
+    height: 18px;
+}
+
+.collapsed .logoutBtn {
+    justify-content: center;
+    padding: 0.75rem;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+}
+
+.collapsed .logoutBtn svg {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
 }
 
 .header {

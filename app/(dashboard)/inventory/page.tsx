@@ -67,12 +67,14 @@ export default async function InventoryPage() {
                     <span className={styles.categoryBadge}>
                       {product.category}
                     </span>
-                    <td className={styles.mono}>
-                      {Number(product.price ?? 0).toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </td>
+                  </td>
+                  <td className={styles.mono}>
+                    {Number(product.price ?? 0).toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </td>
+                  <td>
                     <span
                       className={
                         product.stock <= 5 ? styles.lowStock : styles.goodStock

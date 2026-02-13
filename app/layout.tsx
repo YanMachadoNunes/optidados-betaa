@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { Shell } from "./components/Shell"
 import { ThemeProvider } from "./context/ThemeContext"
+import "./globals.css"
 
 export default function RootLayout({
   children,
@@ -30,7 +31,7 @@ export default function RootLayout({
   // Não renderizar nada enquanto verifica autenticação
   if (isAuthenticated === null) {
     return (
-      <html lang="pt-BR">
+      <html lang="pt-BR" data-theme="dark">
         <body style={{ margin: 0, padding: 0, background: "#0f172a" }}>
           <div style={{ 
             minHeight: "100vh", 
@@ -50,6 +51,18 @@ export default function RootLayout({
   if (pathname === "/login") {
     return (
       <html lang="pt-BR">
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  const theme = localStorage.getItem("optigestao_theme") || "dark";
+                  document.documentElement.setAttribute("data-theme", theme);
+                })();
+              `,
+            }}
+          />
+        </head>
         <body style={{ margin: 0, padding: 0 }}>
           <ThemeProvider>
             {children}
@@ -61,6 +74,18 @@ export default function RootLayout({
 
   return (
     <html lang="pt-BR">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const theme = localStorage.getItem("optigestao_theme") || "dark";
+                document.documentElement.setAttribute("data-theme", theme);
+              })();
+            `,
+          }}
+        />
+      </head>
       <body style={{ margin: 0, padding: 0 }}>
         <ThemeProvider>
           <Shell>{children}</Shell>
