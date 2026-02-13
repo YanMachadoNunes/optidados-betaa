@@ -11,7 +11,9 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
+  LogOut,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import styles from "./sidebar.module.css";
 import { useSidebar } from "../context/SidebarContext";
 
@@ -25,7 +27,13 @@ const menuItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isCollapsed, toggleSidebar } = useSidebar();
+
+  const handleLogout = () => {
+    localStorage.removeItem("optigestao_user");
+    router.push("/login");
+  };
 
   return (
     <aside
@@ -66,15 +74,25 @@ export function Sidebar() {
       </nav>
 
       <div className={styles.footer}>
-        <div className={styles.avatar}>
-          <User size={18} />
-        </div>
-        {!isCollapsed && (
-          <div className={styles.user}>
-            <span className={styles.userName}>Administrador</span>
-            <span className={styles.userRole}>Ótica</span>
+        <div className={styles.userInfo}>
+          <div className={styles.avatar}>
+            <User size={18} />
           </div>
-        )}
+          {!isCollapsed && (
+            <div className={styles.user}>
+              <span className={styles.userName}>Administrador</span>
+              <span className={styles.userRole}>Ótica</span>
+            </div>
+          )}
+        </div>
+        <button 
+          onClick={handleLogout} 
+          className={styles.logoutBtn}
+          title="Sair"
+        >
+          <LogOut size={18} />
+          {!isCollapsed && <span>Sair</span>}
+        </button>
       </div>
     </aside>
   );
