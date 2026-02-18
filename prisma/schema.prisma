@@ -5,9 +5,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"      // <--- Com o "g"
-  url      = env("DATABASE_URL") // <--- Com o parênteses fechando
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Usa a URL 'prisma+postgres' (Rápida)
+  directUrl = env("DIRECT_URL")   // Usa a URL 'postgres' (Direta para migrations)
 }
+
 
 // 1. Clientes
 model Customer {
