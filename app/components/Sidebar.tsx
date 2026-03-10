@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   Users,
@@ -13,17 +15,28 @@ import {
   User,
   LogOut,
   Settings,
+  ClipboardList,
+  Crown,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import styles from "./sidebar.module.css";
 import { useSidebar } from "../context/SidebarContext";
+
+interface UserData {
+  id: string;
+  name: string | null;
+  email: string | null;
+  role?: string;
+  image?: string | null;
+}
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Users, label: "Clientes", path: "/customers" },
+  { icon: ClipboardList, label: "Pedidos", path: "/orders" },
   { icon: Package, label: "Estoque", path: "/inventory" },
   { icon: ShoppingCart, label: "Vendas", path: "/sales" },
   { icon: DollarSign, label: "Financeiro", path: "/finance" },
+  { icon: Crown, label: "Planos", path: "/plans" },
   { icon: Settings, label: "Configurações", path: "/settings" },
 ];
 
@@ -31,24 +44,34 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const [user, setUser] = useState<UserData | null>(null);
 
-  const handleLogout = () => {
+  useEffect(() => {
+    const storedUser = localStorage.getItem("optigestao_user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogout = async () => {
     localStorage.removeItem("optigestao_user");
+    await signOut({ redirect: false });
     router.push("/login");
   };
+
+  const userName = user?.name || user?.email || "Usuário";
+  const userInitial = user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U";
 
   return (
     <aside
       className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
     >
-      {/* Cabeçalho com Logo */}
       <div className={styles.header}>
         <div className={styles.logo}>
           <div className={styles.logoIcon}>O</div>
           {!isCollapsed && <span className={styles.logoText}>OptiGestão</span>}
         </div>
 
-        {/* Botão de Minimizar */}
         <button onClick={toggleSidebar} className={styles.collapseBtn}>
           {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
@@ -77,13 +100,17 @@ export function Sidebar() {
 
       <div className={styles.footer}>
         <div className={styles.userInfo}>
-          <div className={styles.avatar}>
-            <User size={18} />
-          </div>
+          {user?.image ? (
+            <img src={user.image} alt={userName} className={styles.avatarImg} />
+          ) : (
+            <div className={styles.avatar}>
+              {userInitial}
+            </div>
+          )}
           {!isCollapsed && (
             <div className={styles.user}>
-              <span className={styles.userName}>Administrador</span>
-              <span className={styles.userRole}>Ótica</span>
+              <span className={styles.userName}>{userName}</span>
+              <span className={styles.userRole}>{user?.role || "Usuário"}</span>
             </div>
           )}
         </div>

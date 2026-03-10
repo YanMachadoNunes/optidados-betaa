@@ -6,8 +6,7 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL") // Usa a URL 'prisma+postgres' (Rápida)
-  directUrl = env("DIRECT_URL")   // Usa a URL 'postgres' (Direta para migrations)
+  url       = env("DATABASE_URL")
 }
 
 
@@ -21,7 +20,8 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   sales     Sale[]
-  prescriptions Prescription[]  // <--- ADICIONE ISSO AQUI
+  orders    Order[]
+  prescriptions Prescription[]
 }
 
 // 2. Produtos (Estoque)
@@ -35,10 +35,12 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   saleItems   SaleItem[]
+  orderItems  OrderItem[]
+  orderFrame  Order?
 }
 
 model Sale {
-  id            String    @id @default(uuid())  // <--- ESSA LINHA É OBRIGATÓRIA
+  id            String    @id @default(uuid())
   customerId    String?
   customer      Customer? @relation(fields: [customerId], references: [id])
 
@@ -53,14 +55,45 @@ model Sale {
 model SaleItem {
   id          String   @id @default(uuid())
   saleId      String
-  // ADICIONADO: onDelete: Cascade (Se apagar a venda, apaga os itens)
   sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
   productId   String
   product     Product  @relation(fields: [productId], references: [id])
 
   quantity    Int
-  unitPrice   Decimal  @db.Decimal(10, 2) // Força 2 casas decimais
+  unitPrice   Decimal  @db.Decimal(10, 2)
+}
+
+model Order {
+  id            String    @id @default(uuid())
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id])
+
+  prescriptionId String?  @unique
+  prescription  Prescription? @relation(fields: [prescriptionId], references: [id])
+
+  frameId       String?   @unique
+  frame         Product?  @relation(fields: [frameId], references: [id])
+
+  totalAmount   Decimal   @db.Decimal(10, 2)
+  status        String    @default("PENDING") // PENDING, IN_ASSEMBLY, READY, DELIVERED
+  paymentMethod String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2)
 }
 
 model Prescription {
@@ -85,6 +118,8 @@ model Prescription {
   examDate      DateTime @default(now())
   dueDate       DateTime?
   createdAt     DateTime @default(now())
+
+  order         Order?
 }
 
 // No seu schema.prisma

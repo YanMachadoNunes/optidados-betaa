@@ -136,7 +136,7 @@ export async function createSale(
       let totalAmount = 0;
 
       // 2. Preparar os itens para salvar e calcular total REAL
-      const itemsToCreate = [];
+      const itemsToCreate: { productId: string; quantity: number; unitPrice: any }[] = [];
 
       for (const item of items) {
         // Busca o produto no banco para pegar preço e estoque ATUAIS

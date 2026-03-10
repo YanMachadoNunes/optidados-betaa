@@ -1,9 +1,4 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import { Shell } from "./components/Shell"
-import { ThemeProvider } from "./context/ThemeContext"
+import { Providers } from "./providers"
 import "./globals.css"
 
 export default function RootLayout({
@@ -11,69 +6,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
-  const pathname = usePathname()
-  const router = useRouter()
-
-  useEffect(() => {
-    // Verificar se usuário está logado
-    const user = localStorage.getItem("optigestao_user")
-    
-    if (!user && pathname !== "/login") {
-      router.push("/login")
-    } else if (user && pathname === "/login") {
-      router.push("/")
-    }
-    
-    setIsAuthenticated(!!user)
-  }, [pathname, router])
-
-  // Não renderizar nada enquanto verifica autenticação
-  if (isAuthenticated === null) {
-    return (
-      <html lang="pt-BR" data-theme="dark">
-        <body style={{ margin: 0, padding: 0, background: "#0f172a" }}>
-          <div style={{ 
-            minHeight: "100vh", 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center",
-            color: "white"
-          }}>
-            Carregando...
-          </div>
-        </body>
-      </html>
-    )
-  }
-
-  // Se estiver na página de login, não mostrar Shell
-  if (pathname === "/login") {
-    return (
-      <html lang="pt-BR">
-        <head>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function() {
-                  const theme = localStorage.getItem("optigestao_theme") || "dark";
-                  document.documentElement.setAttribute("data-theme", theme);
-                })();
-              `,
-            }}
-          />
-        </head>
-        <body style={{ margin: 0, padding: 0 }}>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    )
-  }
-
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-theme="dark">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -87,9 +21,9 @@ export default function RootLayout({
         />
       </head>
       <body style={{ margin: 0, padding: 0 }}>
-        <ThemeProvider>
-          <Shell>{children}</Shell>
-        </ThemeProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

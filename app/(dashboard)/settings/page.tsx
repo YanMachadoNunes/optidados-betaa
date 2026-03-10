@@ -15,6 +15,9 @@ import {
 } from "lucide-react"
 import style from "./page.module.css"
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export default function SettingsPage() {
   const { theme, toggleTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)

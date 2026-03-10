@@ -44,12 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    // Redirecionar se não estiver logado
-    if (!isLoading && !user && pathname !== "/login") {
+    if (isLoading) return
+    
+    if (!user && pathname !== "/login") {
       router.push("/login")
-    }
-    // Redirecionar se estiver logado e tentar acessar login
-    if (!isLoading && user && pathname === "/login") {
+    } else if (user && pathname === "/login") {
       router.push("/")
     }
   }, [user, isLoading, pathname, router])
