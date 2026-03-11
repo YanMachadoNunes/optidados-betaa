@@ -1,11 +1,12 @@
 "use client"
 
 import { useTheme } from "../../context/ThemeContext"
+import { useAuth } from "../../context/AuthContext"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { 
   Moon, 
   Sun, 
-  Monitor, 
   Palette, 
   Bell, 
   Shield, 
@@ -20,6 +21,8 @@ export const runtime = 'nodejs'
 
 export default function SettingsPage() {
   const { theme, toggleTheme, setTheme } = useTheme()
+  const { user } = useAuth()
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [notifications, setNotifications] = useState(true)
   const [autoSave, setAutoSave] = useState(true)
@@ -27,6 +30,15 @@ export default function SettingsPage() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   if (!mounted) {
     return <div className={style.container}>Carregando...</div>
@@ -180,15 +192,18 @@ export default function SettingsPage() {
           <div className={style.card}>
             <div className={style.profileSection}>
               <div className={style.avatar}>
-                <span>A</span>
+                <span>{user?.name ? getInitials(user.name) : "U"}</span>
               </div>
               <div className={style.profileInfo}>
-                <h4>Administrador</h4>
-                <p>admin@optigestao.com</p>
+                <h4>{user?.name || "Usuário"}</h4>
+                <p>{user?.email || "usuario@email.com"}</p>
               </div>
             </div>
 
-            <button className={`${style.actionButton} ${style.borderTop}`}>
+            <button 
+              className={`${style.actionButton} ${style.borderTop}`}
+              onClick={() => router.push("/settings/profile")}
+            >
               <div className={style.actionInfo}>
                 <h4>Editar Perfil</h4>
                 <p>Altere suas informações pessoais</p>
