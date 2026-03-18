@@ -1,14 +1,13 @@
-import { prisma } from "../../../lib/prisma"; // Caminho relativo padrão
+import { prisma } from "../../../lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteCustomer } from "../actions";
-import style from "./page.module.css"; // Importando o CSS do Dossie
+import style from "./page.module.css";
 import { unstable_noStore as noStore } from "next/cache";
+import { Eye, Phone, Mail, FileText, Calendar, User, Edit2, Trash2, Plus } from "lucide-react";
 
 interface Props {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 }
 
 function getInitials(name: string) {
@@ -19,6 +18,7 @@ function getInitials(name: string) {
     .join("")
     .toUpperCase();
 }
+
 export default async function CustomerDetailsPage({ params }: Props) {
   noStore();
   const { id } = await params;
@@ -27,7 +27,15 @@ export default async function CustomerDetailsPage({ params }: Props) {
     where: { id },
     include: {
       prescriptions: {
-        orderBy: { examDate: "desc" }, // As mais recentes primeiro
+        orderBy: { examDate: "desc" },
+      },
+      sales: {
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      },
+      orders: {
+        orderBy: { createdAt: "desc" },
+        take: 5,
       },
     },
   });
@@ -39,17 +47,15 @@ export default async function CustomerDetailsPage({ params }: Props) {
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
-        {/* Navegação */}
         <div className={style.header}>
           <Link href="/customers" className={style.backLink}>
-            <span>←</span> Voltar para Lista
+            ← Voltar para Lista
           </Link>
-          <span className={style.headerTitle}>ID: {customer.id.slice(-6)}</span>
+          <span className={style.headerId}>ID: {customer.id.slice(-6)}</span>
         </div>
 
-        {/* Card Dossiê */}
+        {/* Card Principal */}
         <div className={style.card}>
-          {/* Topo: Foto e Nome */}
           <div className={style.cardTop}>
             <div className={style.profileBlock}>
               <div className={style.avatar}>{getInitials(customer.name)}</div>
@@ -60,171 +66,91 @@ export default async function CustomerDetailsPage({ params }: Props) {
             </div>
 
             <div className={style.actions}>
-              <Link
-                href={`/customers/${customer.id}/edit`}
-                className={style.editButton}
-              >
-                Editar Dados
+              <Link href={`/customers/${customer.id}/edit`} className={style.editBtn}>
+                <Edit2 size={16} />
+                Editar
               </Link>
-
-              <form
-                action={async () => {
-                  "use server";
-                  await deleteCustomer(customer.id);
-                }}
-              >
-                <button type="submit" className={style.deleteButton}>
+              <form action={async () => {
+                "use server";
+                await deleteCustomer(customer.id);
+              }}>
+                <button type="submit" className={style.deleteBtn}>
+                  <Trash2 size={16} />
                   Excluir
                 </button>
               </form>
             </div>
           </div>
 
-          {/* Corpo: Dados Técnicos */}
           <div className={style.cardBody}>
-            {/* Coluna 1 */}
-            <div>
-              <h2 className={style.sectionTitle}>Contato</h2>
-              <div className={style.infoGroup}>
-                <span className={style.label}>E-mail</span>
-                <div className={style.value}>{customer.email}</div>
+            <div className={style.infoColumn}>
+              <h2 className={style.sectionTitle}>Informações de Contato</h2>
+              <div className={style.infoItem}>
+                <Mail size={16} />
+                <span>{customer.email || "Não cadastrado"}</span>
               </div>
-              <div className={style.infoGroup}>
-                <span className={style.label}>Telefone</span>
-                <div className={style.value}>{customer.phone || "—"}</div>
+              <div className={style.infoItem}>
+                <Phone size={16} />
+                <span>{customer.phone || "Não cadastrado"}</span>
+              </div>
+              <div className={style.infoItem}>
+                <User size={16} />
+                <span>CPF: {customer.cpf || "Não cadastrado"}</span>
+              </div>
+              <div className={style.infoItem}>
+                <Calendar size={16} />
+                <span>Desde {new Date(customer.createdAt).toLocaleDateString("pt-BR")}</span>
               </div>
             </div>
 
-            {/* Coluna 2 */}
-            <div>
-              <h2 className={style.sectionTitle}>Documentação</h2>
-              <div className={style.infoGroup}>
-                <span className={style.label}>CPF</span>
-                <div className={`${style.value} ${style.valueMono}`}>
-                  {customer.cpf || "Não registrado"}
-                </div>
-              </div>
-              <div className={style.infoGroup}>
-                <span className={style.label}>Data de Cadastro</span>
-                <div className={style.value}>
-                  {new Date(customer.createdAt).toLocaleDateString("pt-BR")}
-                </div>
-                <div
-                  style={{
-                    marginTop: "2rem",
-                    borderTop: "1px solid #f1f5f9",
-                    paddingTop: "2rem",
-                  }}
-                >
-                  <div
-                    className={style.header}
-                    style={{ marginBottom: "1rem" }}
-                  >
-                    <h2
-                      className={style.sectionTitle}
-                      style={{ border: "none", margin: 0 }}
-                    >
-                      Histórico de Visão
-                    </h2>
-                    <Link
-                      href={`/customers/${customer.id}/prescriptions/new`}
-                      className={style.editButton} // Reutilizando seu estilo de botão
-                      style={{
-                        background: "#0f172a",
-                        color: "white",
-                        borderColor: "#0f172a",
-                      }}
-                    >
-                      + Nova Receita
-                    </Link>
-                  </div>
+            <div className={style.infoColumn}>
+              <h2 className={style.sectionTitle}>Histórico de Receitas</h2>
+              <Link href={`/customers/${customer.id}/prescriptions/new`} className={style.newPrescriptionBtn}>
+                <Plus size={16} />
+                Nova Receita
+              </Link>
 
-                  {customer.prescriptions.length === 0 ? (
-                    <div
-                      style={{
-                        padding: "2rem",
-                        textAlign: "center",
-                        color: "#64748b",
-                        background: "#f8fafc",
-                        borderRadius: "0.5rem",
-                      }}
-                    >
-                      <p>Nenhuma receita cadastrada para este cliente.</p>
-                      <small>
-                        Clique em "Nova Receita" para lançar o primeiro exame.
-                      </small>
-                    </div>
-                  ) : (
-                    <div style={{ display: "grid", gap: "1rem" }}>
-                      {customer.prescriptions.map((rx) => (
-                        <div
-                          key={rx.id}
-                          style={{
-                            border: "1px solid #e2e8f0",
-                            borderRadius: "0.75rem",
-                            padding: "1rem",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            background: "#fff",
-                          }}
-                        >
-                          <div>
-                            <div style={{ fontWeight: 600, color: "#0f172a" }}>
-                              {new Date(rx.examDate).toLocaleDateString(
-                                "pt-BR",
-                              )}
-                            </div>
-                            <div
-                              style={{ fontSize: "0.85rem", color: "#64748b" }}
-                            >
-                              Dr(a). {rx.doctorName || "Não informado"}
-                            </div>
-                          </div>
-
-                          {/* Resumo Rápido dos Graus */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "2rem",
-                              fontSize: "0.9rem",
-                            }}
-                          >
-                            <div>
-                              <span
-                                style={{
-                                  color: "#94a3b8",
-                                  fontSize: "0.75rem",
-                                }}
-                              >
-                                OD
-                              </span>
-                              <div style={{ fontFamily: "monospace" }}>
-                                {Number(rx.odSpherical).toFixed(2)} /{" "}
-                                {Number(rx.odCylindrical).toFixed(2)}
-                              </div>
-                            </div>
-                            <div>
-                              <span
-                                style={{
-                                  color: "#94a3b8",
-                                  fontSize: "0.75rem",
-                                }}
-                              >
-                                OE
-                              </span>
-                              <div style={{ fontFamily: "monospace" }}>
-                                {Number(rx.oeSpherical).toFixed(2)} /{" "}
-                                {Number(rx.oeCylindrical).toFixed(2)}
-                              </div>
-                            </div>
-                          </div>
+              {customer.prescriptions.length === 0 ? (
+                <div className={style.emptyPrescription}>
+                  <FileText size={32} />
+                  <p>Nenhuma receita cadastrada</p>
+                </div>
+              ) : (
+                <div className={style.prescriptionList}>
+                  {customer.prescriptions.map((rx) => (
+                    <div key={rx.id} className={style.prescriptionItem}>
+                      <div className={style.rxHeader}>
+                        <div className={style.rxDate}>
+                          <Calendar size={14} />
+                          {new Date(rx.examDate).toLocaleDateString("pt-BR")}
                         </div>
-                      ))}
+                        <Link href={`/customers/${customer.id}/prescriptions/${rx.id}`} className={style.viewRxBtn}>
+                          <Eye size={14} />
+                          Ver
+                        </Link>
+                      </div>
+                      <div className={style.rxDoctor}>
+                        Dr(a). {rx.doctorName || "Não informado"}
+                      </div>
+                      <div className={style.rxGrades}>
+                        <div className={style.rxEye}>
+                          <span className={style.rxBadgeOD}>OD</span>
+                          <span>ESF: {Number(rx.odSpherical).toFixed(2)} | CIL: {Number(rx.odCylindrical).toFixed(2)} | E: {rx.odAxis}°</span>
+                        </div>
+                        <div className={style.rxEye}>
+                          <span className={style.rxBadgeOE}>OE</span>
+                          <span>ESF: {Number(rx.oeSpherical).toFixed(2)} | CIL: {Number(rx.oeCylindrical).toFixed(2)} | E: {rx.oeAxis}°</span>
+                        </div>
+                        {(Number(rx.additionOD) > 0 || Number(rx.additionOE) > 0) && (
+                          <div className={style.rxAdd}>
+                            ADIÇÃO: OD {Number(rx.additionOD).toFixed(2)} | OE {Number(rx.additionOE).toFixed(2)}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

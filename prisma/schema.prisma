@@ -9,6 +9,20 @@ datasource db {
   url       = env("DATABASE_URL")
 }
 
+// Usuários do sistema
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String?
+  image     String?
+  plan      String   @default("FREE") // FREE, BASIC, STANDARD, PREMIUM
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+  orders    Order[]
+}
+
 
 // 1. Clientes
 model Customer {
@@ -32,6 +46,7 @@ model Product {
   costPrice   Decimal
   stock       Int      @default(0)
   category    String
+  labCode     String?  // Código do laboratório (para lentes)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   saleItems   SaleItem[]
@@ -41,6 +56,8 @@ model Product {
 
 model Sale {
   id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
   customerId    String?
   customer      Customer? @relation(fields: [customerId], references: [id])
 
@@ -66,6 +83,8 @@ model SaleItem {
 
 model Order {
   id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
   customerId    String
   customer      Customer  @relation(fields: [customerId], references: [id])
 
@@ -114,7 +133,10 @@ model Prescription {
   oeCylindrical Decimal  @default(0)
   oeAxis        Int      @default(0)
 
-  addition      Decimal  @default(0)
+  // Adições (perto)
+  additionOD    Decimal  @default(0)
+  additionOE    Decimal  @default(0)
+  
   examDate      DateTime @default(now())
   dueDate       DateTime?
   createdAt     DateTime @default(now())

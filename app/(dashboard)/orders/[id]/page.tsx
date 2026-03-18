@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Edit, Package } from "lucide-react";
+import { ArrowLeft, Edit, Package, Circle } from "lucide-react";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -54,10 +54,6 @@ export default async function OrderDetailPage({
           </Link>
           <h1>Pedido #{order.id.slice(0, 8)}</h1>
         </div>
-        <Link href={`/orders/${order.id}/edit`} className={styles.editButton}>
-          <Edit size={20} />
-          Editar
-        </Link>
       </div>
 
       <div className={styles.statusBar}>
@@ -92,20 +88,51 @@ export default async function OrderDetailPage({
           </div>
         </div>
 
-        {order.frame && (
+        {order.items.filter(item => item.product.category === "Armações").length > 0 && (
           <div className={styles.card}>
             <h2>Armação</h2>
-            <div className={styles.productInfo}>
-              <Package size={32} />
-              <div>
-                <p><strong>{order.frame.name}</strong></p>
-                <p>R$ {Number(order.frame.price).toFixed(2)}</p>
-              </div>
-            </div>
+            {order.items
+              .filter(item => item.product.category === "Armações")
+              .map(item => (
+                <div key={item.id} className={styles.productInfo}>
+                  <Package size={32} />
+                  <div>
+                    <p><strong>{item.product.name}</strong></p>
+                    <p>R$ {Number(item.unitPrice).toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
           </div>
         )}
 
-        {order.prescription && (
+        {order.items.filter(item => item.product.category !== "Armações").length > 0 && (
+          <div className={styles.card}>
+            <h2>Lentes</h2>
+            {order.items
+              .filter(item => item.product.category !== "Armações")
+              .map(item => (
+                <div key={item.id} className={styles.productInfo}>
+                  <Circle size={32} />
+                  <div>
+                    <p><strong>{item.product.name}</strong></p>
+                    <p>R$ {Number(item.unitPrice).toFixed(2)} x {item.quantity}</p>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+
+        {!order.prescription ? (
+          <div className={styles.card}>
+            <h2>Receita</h2>
+            <div className={styles.emptyCard}>
+              <p>Sem receita vinculada</p>
+              <Link href={`/customers/${order.customer.id}/prescriptions/new`} className={styles.addBtn}>
+                + Adicionar Receita
+              </Link>
+            </div>
+          </div>
+        ) : (
           <div className={styles.card}>
             <h2>Receita</h2>
             <div className={styles.info}>
@@ -131,7 +158,7 @@ export default async function OrderDetailPage({
 
         {order.items.length > 0 && (
           <div className={styles.cardFull}>
-            <h2>Itens do Pedido</h2>
+            <h2>Resumo dos Itens</h2>
             <table className={styles.table}>
               <thead>
                 <tr>

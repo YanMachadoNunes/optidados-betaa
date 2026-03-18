@@ -1,7 +1,8 @@
-import { prisma } from "@/lib/prisma";
-import { z } from "zod";
+import { prisma } from "@/lib/prisma"
+import { z } from "zod"
 
 export const orderSchema = z.object({
+  userId: z.string(),
   customerId: z.string(),
   prescriptionId: z.string().optional(),
   frameId: z.string().optional(),
@@ -25,7 +26,6 @@ export const createOrder = async (data: OrderInput) => {
     include: {
       customer: true,
       prescription: true,
-      frame: true,
       items: {
         include: {
           product: true,
@@ -41,7 +41,6 @@ export const getOrder = async (id: string) => {
     include: {
       customer: true,
       prescription: true,
-      frame: true,
       items: {
         include: {
           product: true,
@@ -58,7 +57,6 @@ export const updateOrder = async (id: string, data: Partial<OrderInput>) => {
     include: {
       customer: true,
       prescription: true,
-      frame: true,
       items: {
         include: {
           product: true,
@@ -81,7 +79,6 @@ export const getOrders = async (status?: string) => {
     include: {
       customer: true,
       prescription: true,
-      frame: true,
       items: {
         include: {
           product: true,
@@ -100,7 +97,6 @@ export const getOrdersByCustomer = async (customerId: string) => {
     include: {
       customer: true,
       prescription: true,
-      frame: true,
       items: {
         include: {
           product: true,
@@ -128,7 +124,7 @@ export const getCustomers = async () => {
 
 export const getProducts = async () => {
   return await prisma.product.findMany({
-    where: { category: "ARMACAO" },
+    where: { category: "Armações" },
     select: { id: true, name: true, price: true },
   });
 };

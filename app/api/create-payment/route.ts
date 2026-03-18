@@ -1,31 +1,59 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../auth/[...nextauth]/route"
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { planName, price } = body;
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: "Usuário não autenticado" },
+        { status: 401 }
+      )
+    }
 
-    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const body = await request.json()
+    const { planName, price, planId } = body
 
-    // Primeiro, criar uma preferência de pagamento PIX
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { success: false, error: "Token do Mercado Pago não configurado" },
+        { status: 500 }
+      )
+    }
+
+    console.log("Access Token exists:", !!accessToken)
+    console.log("Access Token:", accessToken?.substring(0, 20) + "...")
+
+    // URL base para redirects
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
+    
+    console.log("NEXTAUTH_URL env:", process.env.NEXTAUTH_URL)
+    console.log("baseUrl used:", baseUrl)
+
+    // Mapeamento de planos para nomes internos
+    const planMap: Record<string, string> = {
+      "1": "BASIC",
+      "2": "STANDARD", 
+      "3": "PREMIUM",
+    }
+    const planType = planMap[planId] || "STANDARD"
+
     const preferenceData = {
       items: [
         {
           title: `Plano ${planName} - OptiGestão`,
-          description: "Acesso completo ao sistema de gestão para óticas",
-          quantity: 1,
-          currency_id: "BRL",
           unit_price: Number(price),
+          quantity: 1,
         },
       ],
-      payment_methods: {
-        included_payment_types: [{ id: "pix" }],
-      },
-      payment_type_id: "pix",
-      expires: true,
-      expiration_date_from: new Date().toISOString(),
-      expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-    };
+      external_reference: session.user.id,
+    }
+
+    console.log("Preference Data:", JSON.stringify(preferenceData, null, 2))
 
     const prefResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
@@ -34,32 +62,34 @@ export async function POST(request: NextRequest) {
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(preferenceData),
-    });
+    })
 
-    const preference = await prefResponse.json();
+    const preference = await prefResponse.json()
+
+    console.log("MP Response Status:", prefResponse.status)
+    console.log("MP Response:", JSON.stringify(preference, null, 2))
+
+    // Para APP_USR em modo teste, usar sandbox_init_point
+    const paymentUrl = preference.sandbox_init_point || preference.init_point
 
     if (preference.id) {
-      // Agora buscar os dados do PIX usando o ID da preferência
-      // O Mercado Pago não retorna QR code via API, então retornamos o link de pagamento
       return NextResponse.json({
         success: true,
         preferenceId: preference.id,
-        paymentUrl: preference.init_point,
-        qrCode: null,
-        qrCodeBase64: null,
-        message: "Use o link para pagar via PIX",
-      });
+        paymentUrl: paymentUrl,
+        message: "Pagamento criado com sucesso",
+      })
     }
 
     return NextResponse.json({
       success: false,
       error: preference.message || "Erro ao criar preferência",
-    });
+    })
   } catch (error: any) {
-    console.error("Error:", error);
+    console.error("Error:", error)
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
-    );
+    )
   }
 }

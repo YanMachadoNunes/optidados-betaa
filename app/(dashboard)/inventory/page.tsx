@@ -1,5 +1,5 @@
 import styles from "./page.module.css";
-import { prisma } from "../../lib/prisma";
+import prisma from "@/lib/utils";
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -54,6 +54,7 @@ export default async function InventoryPage() {
               <tr>
                 <th>Produto</th>
                 <th>Categoria</th>
+                <th>Código Lab</th>
                 <th>Preço Venda</th>
                 <th>Estoque</th>
                 <th className={styles.textRight}>Ações</th>
@@ -67,6 +68,9 @@ export default async function InventoryPage() {
                     <span className={styles.categoryBadge}>
                       {product.category}
                     </span>
+                  </td>
+                  <td className={styles.labCode}>
+                    {product.labCode || "-"}
                   </td>
                   <td className={styles.mono}>
                     {Number(product.price ?? 0).toLocaleString("pt-BR", {
@@ -84,7 +88,9 @@ export default async function InventoryPage() {
                     </span>
                   </td>
                   <td className={styles.textRight}>
-                    <button className={styles.editBtn}>Editar</button>
+                    <Link href={`/inventory/${product.id}/edit`} className={styles.editBtn}>
+                      Editar
+                    </Link>
                   </td>
                 </tr>
               ))}

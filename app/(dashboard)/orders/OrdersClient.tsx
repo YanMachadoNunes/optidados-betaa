@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Eye, Edit, Package } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Edit, Package } from "lucide-react";
 import styles from "./page.module.css";
 
 const statusLabels: Record<string, string> = {
@@ -35,7 +36,9 @@ export default function OrdersPageClient({
   orders: Order[];
   counts: { PENDING: number; IN_ASSEMBLY: number; READY: number; DELIVERED: number; total: number };
 }) {
+  const router = useRouter();
   const [filter, setFilter] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filteredOrders = filter 
     ? orders.filter(o => o.status === filter)
@@ -44,6 +47,20 @@ export default function OrdersPageClient({
   const handleFilterClick = (status: string | null) => {
     setFilter(status);
   };
+
+  async function handleDelete(id: string) {
+    if (!confirm("Tem certeza que deseja excluir este pedido?")) return;
+    
+    setDeletingId(id);
+    try {
+      await fetch(`/api/orders/${id}`, { method: "DELETE" });
+      router.refresh();
+    } catch (error) {
+      alert("Erro ao excluir pedido");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className={styles.container}>
@@ -144,12 +161,19 @@ export default function OrdersPageClient({
                     {new Date(order.createdAt).toLocaleDateString("pt-BR")}
                   </td>
                   <td className={styles.actions}>
-                    <Link href={`/orders/${order.id}`} className={styles.actionButton}>
-                      <Eye size={18} />
-                    </Link>
                     <Link href={`/orders/${order.id}/edit`} className={styles.actionButton}>
                       <Edit size={18} />
                     </Link>
+                    <button 
+                      className={`${styles.actionButton} ${styles.deleteAction}`}
+                      onClick={() => handleDelete(order.id)}
+                      disabled={deletingId === order.id}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3,6 5,6 21,6"></polyline>
+                        <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                      </svg>
+                    </button>
                   </td>
                 </tr>
               ))

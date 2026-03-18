@@ -5,6 +5,20 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Iniciando seed do banco de dados...\n')
 
+  // ========== USUÁRIO ==========
+  console.log('👤 Criando usuário...')
+  const user = await prisma.user.upsert({
+    where: { email: 'admin@optigestao.com' },
+    update: {},
+    create: {
+      name: 'Administrador',
+      email: 'admin@optigestao.com',
+      password: 'admin123',
+      plan: 'PREMIUM',
+    }
+  })
+  console.log(`✅ Usuário criado: ${user.email}`)
+
   // ========== CLIENTES ==========
   console.log('👥 Criando clientes...')
   const customers = await Promise.all([
@@ -92,6 +106,7 @@ async function main() {
         price: 1290.00,
         costPrice: 645.00,
         stock: 25,
+        labCode: 'VAR-2024-001234',
       }
     }),
     prisma.product.create({
@@ -101,6 +116,7 @@ async function main() {
         price: 1890.00,
         costPrice: 945.00,
         stock: 18,
+        labCode: 'ZSL-2024-005678',
       }
     }),
     prisma.product.create({
@@ -110,6 +126,7 @@ async function main() {
         price: 450.00,
         costPrice: 225.00,
         stock: 35,
+        labCode: 'TR8-2024-009012',
       }
     }),
     
@@ -181,6 +198,7 @@ async function main() {
   // Venda 1
   await prisma.sale.create({
     data: {
+      userId: user.id,
       customerId: customers[0].id,
       totalAmount: 1349.80,
       status: 'COMPLETED',
@@ -196,6 +214,7 @@ async function main() {
   // Venda 2
   await prisma.sale.create({
     data: {
+      userId: user.id,
       customerId: customers[1].id,
       totalAmount: 1890.00,
       status: 'COMPLETED',
@@ -210,6 +229,7 @@ async function main() {
   // Venda 3
   await prisma.sale.create({
     data: {
+      userId: user.id,
       customerId: customers[2].id,
       totalAmount: 649.80,
       status: 'COMPLETED',
@@ -225,6 +245,7 @@ async function main() {
   // Venda 4 (Avulsa)
   await prisma.sale.create({
     data: {
+      userId: user.id,
       totalAmount: 459.90,
       status: 'COMPLETED',
       items: {
@@ -238,6 +259,7 @@ async function main() {
   // Venda 5
   await prisma.sale.create({
     data: {
+      userId: user.id,
       customerId: customers[3].id,
       totalAmount: 2099.80,
       status: 'COMPLETED',
@@ -266,7 +288,8 @@ async function main() {
         oeSpherical: -2.25,
         oeCylindrical: -0.50,
         oeAxis: 175,
-        addition: 2.00,
+        additionOD: 2.00,
+        additionOE: 2.00,
       }
     }),
     prisma.prescription.create({
@@ -279,7 +302,8 @@ async function main() {
         oeSpherical: -1.50,
         oeCylindrical: 0,
         oeAxis: 0,
-        addition: 1.50,
+        additionOD: 1.50,
+        additionOE: 1.50,
       }
     }),
   ])

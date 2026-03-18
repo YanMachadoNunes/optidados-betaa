@@ -1,5 +1,7 @@
 .container {
+  background: var(--bg-primary);
   padding: 2rem;
+  min-height: 100vh;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -126,17 +128,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.375rem;
-  color: #6b7280;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .actionButton:hover {
-  background-color: #f3f4f6;
-  color: #2563eb;
+  background: var(--bg-hover);
+  color: var(--accent-primary);
+}
+
+.actionButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.deleteAction {
+  color: var(--text-secondary);
+}
+
+.deleteAction:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.deleteAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

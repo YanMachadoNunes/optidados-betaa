@@ -1,1 +1,3 @@
-export { default as prisma } from "./utils";
+import prisma from "./utils";
+
+export { prisma }

@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "./context/ThemeContext"
 import { SessionProvider, useSession } from "next-auth/react"
+import { AuthProvider } from "./context/AuthContext"
 import { ReactNode, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
@@ -29,7 +30,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
       <ThemeProvider>
-        <AuthHandler>{children}</AuthHandler>
+        <AuthProvider>
+          <AuthHandler>{children}</AuthHandler>
+        </AuthProvider>
       </ThemeProvider>
     </SessionProvider>
   )

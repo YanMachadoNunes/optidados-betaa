@@ -1,7 +1,7 @@
-import { prisma } from "../../../../../lib/prisma"; // Ajuste os .. conforme sua pasta
+import { prisma } from "../../../../../lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createPrescription } from "../../../actions"; // Ajuste o import
+import { createPrescription } from "../../../actions";
 import style from "./page.module.css";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -13,7 +13,6 @@ export default async function NewPrescriptionPage({ params }: Props) {
   noStore();
   const { id } = await params;
 
-  // Busca o cliente só pra mostrar o nome no topo
   const customer = await prisma.customer.findUnique({
     where: { id },
     select: { id: true, name: true },
@@ -24,11 +23,9 @@ export default async function NewPrescriptionPage({ params }: Props) {
   return (
     <div className={style.pageWrapper}>
       <form action={createPrescription} className={style.container}>
-        {/* Input escondido para enviar o ID do cliente */}
         <input type="hidden" name="customerId" value={customer.id} />
 
         <div className={style.card}>
-          {/* Cabeçalho */}
           <div className={style.header}>
             <h1 className={style.title}>Nova Receita</h1>
             <p className={style.subtitle}>
@@ -36,23 +33,14 @@ export default async function NewPrescriptionPage({ params }: Props) {
             </p>
           </div>
 
-          {/* Dados Médicos Gerais */}
-          <div
-            style={{
-              padding: "2rem",
-              borderBottom: "1px solid #e2e8f0",
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr 1fr",
-              gap: "1rem",
-            }}
-          >
+          <div className={style.medicalData}>
             <div className={style.field}>
               <label className={style.label}>Médico / Optometrista</label>
               <input
                 type="text"
                 name="doctorName"
                 className={style.input}
-                placeholder="Ex: Dr. Estranho"
+                placeholder="Nome do médico"
               />
             </div>
             <div className={style.field}>
@@ -70,9 +58,8 @@ export default async function NewPrescriptionPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Campo de Anexo */}
           <div className={style.attachmentSection}>
-            <label className={style.label}>Anexar Receita (PDF ou Imagem)</label>
+            <label>Anexar Receita (PDF ou Imagem)</label>
             <input
               type="file"
               name="attachment"
@@ -84,14 +71,12 @@ export default async function NewPrescriptionPage({ params }: Props) {
             </span>
           </div>
 
-          {/* O Grande Grid Ótico */}
           <div className={style.opticalGrid}>
-            {/* --- OLHO DIREITO (OD) --- */}
+            {/* OD */}
             <div className={`${style.eyeBlock} ${style.rightEye}`}>
               <div className={style.eyeTitle}>
                 <span className={style.badgeOD}>OD</span> Olho Direito
               </div>
-
               <div className={style.row}>
                 <div className={style.field}>
                   <label className={style.label}>Esférico</label>
@@ -114,7 +99,7 @@ export default async function NewPrescriptionPage({ params }: Props) {
                   />
                 </div>
                 <div className={style.field}>
-                  <label className={style.label}>Eixo (0-180)</label>
+                  <label className={style.label}>Eixo</label>
                   <input
                     type="number"
                     min="0"
@@ -125,25 +110,23 @@ export default async function NewPrescriptionPage({ params }: Props) {
                   />
                 </div>
               </div>
-
-              <div className={style.field}>
+              <div className={`${style.field} ${style.fieldFull}`}>
                 <label className={style.label}>Adição (Perto)</label>
                 <input
                   type="number"
                   step="0.25"
-                  name="addition"
+                  name="additionOD"
                   className={style.input}
                   placeholder="+0.00"
                 />
               </div>
             </div>
 
-            {/* --- OLHO ESQUERDO (OE) --- */}
+            {/* OE */}
             <div className={`${style.eyeBlock} ${style.leftEye}`}>
               <div className={style.eyeTitle}>
                 <span className={style.badgeOE}>OE</span> Olho Esquerdo
               </div>
-
               <div className={style.row}>
                 <div className={style.field}>
                   <label className={style.label}>Esférico</label>
@@ -166,7 +149,7 @@ export default async function NewPrescriptionPage({ params }: Props) {
                   />
                 </div>
                 <div className={style.field}>
-                  <label className={style.label}>Eixo (0-180)</label>
+                  <label className={style.label}>Eixo</label>
                   <input
                     type="number"
                     min="0"
@@ -177,15 +160,21 @@ export default async function NewPrescriptionPage({ params }: Props) {
                   />
                 </div>
               </div>
+              <div className={`${style.field} ${style.fieldFull}`}>
+                <label className={style.label}>Adição (Perto)</label>
+                <input
+                  type="number"
+                  step="0.25"
+                  name="additionOE"
+                  className={style.input}
+                  placeholder="+0.00"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Rodapé com Botões */}
           <div className={style.footer}>
-            <Link
-              href={`/customers/${customer.id}`}
-              className={style.btnCancel}
-            >
+            <Link href={`/customers/${customer.id}`} className={style.btnCancel}>
               Cancelar
             </Link>
             <button type="submit" className={style.btnSave}>

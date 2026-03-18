@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
+import { updateOrderAction } from "../../server-actions";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,6 @@ export default async function EditOrderPage({
     where: { id },
     include: {
       customer: true,
-      frame: true,
       items: {
         include: {
           product: true,
@@ -41,7 +41,7 @@ export default async function EditOrderPage({
         </div>
       </div>
 
-      <form className={styles.form} action={"/api/orders/update"} method="POST">
+      <form className={styles.form} action={updateOrderAction}>
         <input type="hidden" name="orderId" value={id} />
         
         <div className={styles.section}>
@@ -61,7 +61,7 @@ export default async function EditOrderPage({
           <h2>Informações do Pedido</h2>
           <div className={styles.info}>
             <p><strong>Cliente:</strong> {order.customer.name}</p>
-            <p><strong>Armação:</strong> {order.frame?.name || "Não selecionada"}</p>
+            <p><strong>Armação:</strong> {order.items.find(i => i.product.category === "Armações")?.product.name || "Não selecionada"}</p>
             <p><strong>Valor Total:</strong> R$ {Number(order.totalAmount).toFixed(2)}</p>
             <p><strong>Data:</strong> {new Date(order.createdAt).toLocaleDateString("pt-BR")}</p>
           </div>

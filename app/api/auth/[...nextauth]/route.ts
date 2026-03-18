@@ -1,8 +1,9 @@
-import NextAuth from "next-auth"
+import NextAuth, { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
+import prisma from "@/lib/utils"
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -16,8 +17,20 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (credentials?.email === "admin@optigestao.com" && credentials?.password === "admin123") {
+          const user = await prisma.user.findUnique({
+            where: { email: "admin@optigestao.com" }
+          })
+          
+          if (user) {
+            return {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+            }
+          }
+          
           return {
-            id: "1",
+            id: "fallback-admin-id",
             name: "Administrador",
             email: "admin@optigestao.com",
           }
@@ -27,13 +40,32 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }: any) {
+      if (account?.provider === "google" && user.email) {
+        // Cria ou atualiza o usuário no banco
+        await prisma.user.upsert({
+          where: { email: user.email },
+          update: {
+            name: user.name,
+            image: user.image,
+          },
+          create: {
+            email: user.email,
+            name: user.name || "Usuário Google",
+            image: user.image,
+            plan: "FREE",
+          },
+        })
+      }
+      return true
+    },
     async session({ session, token }: any) {
       if (session?.user) {
-        session.user.id = token.sub
+        session.user.id = token.sub || token.id
       }
       return session
     },
-    async jwt({ token, user }: any) {
+    async jwt({ token, user, account }: any) {
       if (user) {
         token.id = user.id
       }
@@ -43,6 +75,11 @@ const handler = NextAuth({
   pages: {
     signIn: "/login",
   },
-})
+  session: {
+    strategy: "jwt",
+  },
+}
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }

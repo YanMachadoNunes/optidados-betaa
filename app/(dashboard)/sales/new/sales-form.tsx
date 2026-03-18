@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createSale } from "../../customers/actions"; // Ajuste o caminho se necessário
+import { useAuth } from "../../../context/AuthContext";
+import { createSale } from "../../customers/actions";
 import style from "./page.module.css";
 
-// Tipos para o TypeScript não reclamar
 type Product = {
   id: string;
   name: string;
-  price: number; // Convertemos Decimal para number no Server Component
+  price: number;
   stock: number;
+  category?: string;
 };
 
 type Customer = {
@@ -28,96 +29,100 @@ interface SalesFormProps {
   customers: Customer[];
 }
 
+const PRODUCTS_PER_PAGE = 10;
+
 export default function SalesForm({ products, customers }: SalesFormProps) {
+  const { user } = useAuth()
   const router = useRouter();
 
-  // Estados do Sistema
   const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("anonymous");
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Lógica: Filtrar produtos na busca
   const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Lógica: Adicionar ao Carrinho
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const visibleProducts = filteredProducts.slice(startIndex, endIndex);
+
+  function handleSearch(value: string) {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  }
+
   function addToCart(product: Product) {
-    if (product.stock <= 0) return alert("Produto sem estoque!");
+    if (product.stock <= 0) return;
 
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
 
       if (existing) {
-        // Se já existe, só aumenta a quantidade (se tiver estoque)
         if (existing.quantity >= product.stock) {
-          alert("Estoque máximo atingido para este item.");
           return prev;
         }
         return prev.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
-            : item,
+            : item
         );
       }
 
-      // Se não existe, adiciona novo
       return [...prev, { ...product, quantity: 1 }];
     });
   }
 
-  // Lógica: Mudar quantidade (+ ou -)
   function updateQuantity(id: string, delta: number) {
     setCart((prev) =>
       prev.map((item) => {
         if (item.id === id) {
           const newQty = item.quantity + delta;
-          if (newQty < 1) return item; // Não deixa zerar por aqui (tem botão remover)
-          if (newQty > item.stock) {
-            alert("Estoque insuficiente.");
-            return item;
-          }
+          if (newQty < 1) return item;
+          if (newQty > item.stock) return item;
           return { ...item, quantity: newQty };
         }
         return item;
-      }),
+      })
     );
   }
 
-  // Lógica: Remover do Carrinho
   function removeFromCart(id: string) {
     setCart((prev) => prev.filter((item) => item.id !== id));
   }
 
-  // Cálculo do Total
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  // Lógica: Finalizar Venda (O momento da verdade)
   async function handleCheckout() {
     if (cart.length === 0) return alert("Carrinho vazio!");
 
     const confirm = window.confirm(
-      `Finalizar venda de R$ ${total.toFixed(2)}?`,
+      `Finalizar venda de R$ ${total.toFixed(2)}?`
     );
     if (!confirm) return;
 
     setLoading(true);
 
-    // Formata para o formato que a Server Action espera
     const payloadItems = cart.map((item) => ({
       productId: item.id,
       quantity: item.quantity,
     }));
 
     try {
-      const result = await createSale(selectedCustomer, payloadItems);
+      if (!user?.id) {
+        alert("Usuário não autenticado");
+        return;
+      }
+      const result = await createSale(user.id, selectedCustomer, payloadItems);
 
       if (result.error) {
         alert("Erro: " + result.error);
       } else {
         alert("Venda realizada com sucesso!");
-        router.push("/sales"); // Redireciona para lista de vendas
+        router.push("/sales");
       }
     } catch (e) {
       alert("Erro inesperado ao processar venda.");
@@ -126,82 +131,118 @@ export default function SalesForm({ products, customers }: SalesFormProps) {
     }
   }
 
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+      pageNumbers.push(i);
+    } else if (i === currentPage - 2 || i === currentPage + 2) {
+      pageNumbers.push('...');
+    }
+  }
+
   return (
-    <div className={style.container}>
-      {/* ESQUERDA: Área de Produtos */}
-      <div className={style.productsArea}>
-        {/* Busca */}
+    <div className={style.content}>
+      {/* Lista de Produtos */}
+      <div>
         <div className={style.searchCard}>
           <input
             type="text"
-            placeholder="🔍 Buscar produto por nome..."
+            placeholder="Buscar produto..."
             className={style.searchInput}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
 
-        {/* Grid de Produtos */}
-        <div className={style.resultsGrid}>
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              className={style.productCard}
-              onClick={() => addToCart(product)}
-              style={{ opacity: product.stock === 0 ? 0.5 : 1 }}
+        <div className={style.productsTable}>
+          <div className={style.tableHeader}>
+            <span>Produto</span>
+            <span>Preço</span>
+            <span>Estoque</span>
+            <span></span>
+            <span></span>
+          </div>
+
+          {visibleProducts.map((product) => (
+            <div 
+              key={product.id} 
+              className={`${style.tableRow} ${product.stock === 0 ? style.outOfStock : ""}`}
             >
               <div>
                 <div className={style.productName}>{product.name}</div>
-                <div className={style.stockBadge}>Estoque: {product.stock}</div>
+                <div className={style.productCategory}>{product.category}</div>
               </div>
-              <div className={style.productMeta}>
-                <span className={style.price}>
-                  R$ {product.price.toFixed(2)}
-                </span>
-                <span style={{ fontSize: "1.2rem", color: "#3b82f6" }}>+</span>
+              <div className={style.price}>
+                R$ {product.price.toFixed(2)}
               </div>
+              <div className={`${style.stock} ${product.stock === 0 ? style.out : product.stock <= 5 ? style.low : ""}`}>
+                {product.stock === 0 ? "Esgotado" : product.stock}
+              </div>
+              <div></div>
+              <button
+                className={style.addBtn}
+                onClick={() => addToCart(product)}
+                disabled={product.stock === 0}
+              >
+                +
+              </button>
             </div>
           ))}
-          {filteredProducts.length === 0 && (
-            <p
-              style={{
-                color: "#64748b",
-                textAlign: "center",
-                gridColumn: "1/-1",
-              }}
-            >
+
+          {visibleProducts.length === 0 && (
+            <div style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
               Nenhum produto encontrado.
-            </p>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className={style.pagination}>
+              <button
+                className={style.pageBtn}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                ←
+              </button>
+              {pageNumbers.map((num, idx) => (
+                num === '...' ? (
+                  <span key={`ellipsis-${idx}`} style={{ color: "var(--text-muted)" }}>...</span>
+                ) : (
+                  <button
+                    key={num}
+                    className={`${style.pageBtn} ${currentPage === num ? style.active : ""}`}
+                    onClick={() => setCurrentPage(num as number)}
+                  >
+                    {num}
+                  </button>
+                )
+              ))}
+              <button
+                className={style.pageBtn}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                →
+              </button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* DIREITA: Carrinho (PDV) */}
+      {/* Carrinho */}
       <div className={style.cartArea}>
         <div className={style.cartCard}>
           <div className={style.cartHeader}>
-            <div className={style.cartTitle}>🛒 Caixa Aberto</div>
+            Caixa Aberto
           </div>
 
-          {/* Seleção de Cliente */}
-          <div style={{ padding: "1rem", borderBottom: "1px solid #f1f5f9" }}>
-            <label
-              style={{
-                fontSize: "0.8rem",
-                color: "#64748b",
-                display: "block",
-                marginBottom: "0.5rem",
-              }}
-            >
-              Cliente Vinculado
-            </label>
+          <div className={style.customerSelect}>
+            <label>Cliente</label>
             <select
-              className={style.searchInput} // Reutilizando estilo
               value={selectedCustomer}
               onChange={(e) => setSelectedCustomer(e.target.value)}
-              style={{ padding: "0.5rem" }}
             >
-              <option value="anonymous">Venda Avulsa (Sem cadastro)</option>
+              <option value="anonymous">Venda Avulsa</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name} {c.cpf ? `(${c.cpf})` : ""}
@@ -210,19 +251,11 @@ export default function SalesForm({ products, customers }: SalesFormProps) {
             </select>
           </div>
 
-          {/* Lista de Itens */}
           <div className={style.cartBody}>
             {cart.length === 0 ? (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "2rem",
-                  color: "#cbd5e1",
-                }}
-              >
-                O carrinho está vazio.
-                <br />
-                Clique nos produtos ao lado.
+              <div className={style.emptyCart}>
+                <span>🛒</span>
+                Carrinho vazio
               </div>
             ) : (
               cart.map((item) => (
@@ -240,7 +273,7 @@ export default function SalesForm({ products, customers }: SalesFormProps) {
                     >
                       -
                     </button>
-                    <span>{item.quantity}</span>
+                    <span style={{ minWidth: "20px", textAlign: "center", fontWeight: 600 }}>{item.quantity}</span>
                     <button
                       className={style.qtyBtn}
                       onClick={() => updateQuantity(item.id, 1)}
@@ -248,15 +281,10 @@ export default function SalesForm({ products, customers }: SalesFormProps) {
                       +
                     </button>
                     <button
-                      className={style.qtyBtn}
-                      style={{
-                        color: "red",
-                        borderColor: "#fee2e2",
-                        marginLeft: "0.5rem",
-                      }}
+                      className={style.removeBtn}
                       onClick={() => removeFromCart(item.id)}
                     >
-                      ✕
+                      ×
                     </button>
                   </div>
                 </div>
@@ -264,11 +292,10 @@ export default function SalesForm({ products, customers }: SalesFormProps) {
             )}
           </div>
 
-          {/* Footer e Total */}
           <div className={style.cartFooter}>
             <div className={style.totalRow}>
               <span>Total</span>
-              <span>R$ {total.toFixed(2)}</span>
+              <span className={style.totalValue}>R$ {total.toFixed(2)}</span>
             </div>
             <button
               className={style.checkoutButton}

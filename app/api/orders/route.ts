@@ -1,8 +1,38 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth/next";
+import prisma from "@/lib/utils";
+import { Prisma } from "@prisma/client";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function POST(request: Request) {
   try {
+    let userId = "";
+    
+    try {
+      const session = await getServerSession(authOptions)
+      if (session?.user?.id) {
+        const userExists = await prisma.user.findUnique({
+          where: { id: session.user.id },
+        });
+        if (userExists) {
+          userId = session.user.id;
+        }
+      }
+    } catch (e) {
+      // Session might not be available
+    }
+    
+    if (!userId) {
+      const defaultUser = await prisma.user.findFirst();
+      if (!defaultUser) {
+        return NextResponse.json(
+          { error: "Nenhum usuário encontrado no sistema" },
+          { status: 400 }
+        );
+      }
+      userId = defaultUser.id;
+    }
+
     const formData = await request.formData();
 
     const customerId = formData.get("customerId") as string;
@@ -23,7 +53,7 @@ export async function POST(request: Request) {
     const items: {
       productId: string;
       quantity: number;
-      unitPrice: number;
+      unitPrice: Prisma.Decimal;
     }[] = [];
 
     if (frameId) {
@@ -35,7 +65,7 @@ export async function POST(request: Request) {
         items.push({
           productId: frameId,
           quantity: 1,
-          unitPrice: Number(frame.price),
+          unitPrice: new Prisma.Decimal(frame.price.toString()),
         });
       }
     }
@@ -50,17 +80,18 @@ export async function POST(request: Request) {
         items.push({
           productId: lensProductId,
           quantity: lensQuantity,
-          unitPrice: Number(lens.price),
+          unitPrice: new Prisma.Decimal(lens.price.toString()),
         });
       }
     }
 
     const order = await prisma.order.create({
       data: {
+        userId: userId,
         customerId,
         frameId: frameId || null,
         paymentMethod: paymentMethod || null,
-        totalAmount,
+        totalAmount: new Prisma.Decimal(totalAmount),
         status: "PENDING",
         items: {
           create: items,

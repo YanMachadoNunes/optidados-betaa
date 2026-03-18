@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../lib/prisma";
+import prisma from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
@@ -40,6 +40,11 @@ export async function createCustomer(formData: FormData) {
 
 // Adicione isso no final do arquivo actions.ts
 export async function deleteCustomer(id: string) {
+  // Primeiro deleta as receitas associadas
+  await prisma.prescription.deleteMany({
+    where: { customerId: id },
+  });
+  
   await prisma.customer.delete({
     where: { id },
   });
@@ -100,8 +105,9 @@ export async function createPrescription(formData: FormData) {
       oeCylindrical: parseDecimal(formData.get("oeCylindrical")),
       oeAxis: parseIntVal(formData.get("oeAxis")),
 
-      // Adição
-      addition: parseDecimal(formData.get("addition")),
+      // Adições (perto)
+      additionOD: parseDecimal(formData.get("additionOD")),
+      additionOE: parseDecimal(formData.get("additionOE")),
 
       // Datas
       examDate: new Date((formData.get("examDate") as string) || new Date()),
@@ -121,17 +127,33 @@ type SaleItemInput = {
 };
 
 export async function createSale(
+  userId: string,
   customerId: string | null,
   items: SaleItemInput[],
 ) {
-  // 1. Validar se tem itens
   if (!items || items.length === 0) {
     return { error: "O carrinho está vazio." };
   }
 
+  if (!userId) {
+    return { error: "Usuário não autenticado." };
+  }
+
   try {
-    // A MÁGICA: Transaction
-    // Tudo aqui dentro roda junto. Se um falhar, tudo falha.
+    let finalUserId = userId;
+    
+    const userExists = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!userExists) {
+      const defaultUser = await prisma.user.findFirst();
+      if (!defaultUser) {
+        return { error: "Nenhum usuário encontrado no sistema." };
+      }
+      finalUserId = defaultUser.id;
+    }
+
     await prisma.$transaction(async (tx) => {
       let totalAmount = 0;
 
@@ -161,7 +183,7 @@ export async function createSale(
         itemsToCreate.push({
           productId: product.id,
           quantity: item.quantity,
-          unitPrice: product.price, // Salva o preço histórico
+          unitPrice: new Prisma.Decimal(product.price.toString()), // Salva o preço histórico
         });
 
         // 3. Baixa no Estoque IMEDIATAMENTE
@@ -178,8 +200,9 @@ export async function createSale(
       // 4. Cria a Venda com o valor total calculado
       await tx.sale.create({
         data: {
+          userId: finalUserId,
           customerId: customerId === "anonymous" ? null : customerId, // Trata cliente anônimo
-          totalAmount: totalAmount,
+          totalAmount: new Prisma.Decimal(totalAmount),
           status: "COMPLETED", // Venda balcão já sai completa
           items: {
             create: itemsToCreate,
@@ -202,8 +225,8 @@ export async function createProduct(formData: FormData) {
   const name = formData.get("name") as string;
   const category = formData.get("category") as string;
   const stock = parseInt(formData.get("stock") as string);
+  const labCode = formData.get("labCode") as string;
 
-  // Tratamento de valores monetários
   const price = parseCurrency(formData.get("price") as string);
   const costPrice = parseCurrency(formData.get("costPrice") as string);
 
@@ -214,6 +237,7 @@ export async function createProduct(formData: FormData) {
       stock,
       price,
       costPrice,
+      labCode: labCode || null,
     },
   });
 

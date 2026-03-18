@@ -1,13 +1,13 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { signIn, signOut, useSession } from "next-auth/react"
 
 interface User {
   id: string
   name: string
   email: string
-  role: string
+  image?: string
 }
 
 interface AuthContextType {
@@ -20,67 +20,44 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Usuário padrão para demonstração
-const DEFAULT_USER = {
-  id: "1",
-  name: "Administrador",
-  email: "admin@optigestao.com",
-  password: "admin123",
-  role: "admin"
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession()
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
-  const pathname = usePathname()
 
   useEffect(() => {
-    // Verificar se usuário está logado no localStorage
-    const storedUser = localStorage.getItem("optigestao_user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    if (session?.user) {
+      setUser({
+        id: (session.user as any).id || session.user.email || "",
+        name: session.user.name || "",
+        email: session.user.email || "",
+        image: session.user.image,
+      })
+    } else {
+      setUser(null)
     }
-    setIsLoading(false)
-  }, [])
-
-  useEffect(() => {
-    if (isLoading) return
-    
-    if (!user && pathname !== "/login") {
-      router.push("/login")
-    } else if (user && pathname === "/login") {
-      router.push("/")
-    }
-  }, [user, isLoading, pathname, router])
+  }, [session])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulação de autenticação
-    if (email === DEFAULT_USER.email && password === DEFAULT_USER.password) {
-      const { password: _, ...userWithoutPassword } = DEFAULT_USER
-      setUser(userWithoutPassword)
-      localStorage.setItem("optigestao_user", JSON.stringify(userWithoutPassword))
-      return true
-    }
-    return false
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    })
+    return result?.ok || false
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("optigestao_user")
-    router.push("/login")
+  const logout = async () => {
+    await signOut({ redirect: true, callbackUrl: "/login" })
   }
 
   const updateUser = (data: Partial<User>) => {
     if (user) {
-      const updatedUser = { ...user, ...data }
-      setUser(updatedUser)
-      localStorage.setItem("optigestao_user", JSON.stringify(updatedUser))
+      setUser({ ...user, ...data })
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, isLoading: status === "loading" }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,0 +1,307 @@
+import Link from "next/link"
+import prisma from "@/lib/utils"
+import { 
+  Users, 
+  Package, 
+  ShoppingCart, 
+  DollarSign,
+  Clock,
+  AlertTriangle,
+  TrendingUp,
+  ArrowRight,
+  Eye,
+  Receipt,
+  UserPlus
+} from "lucide-react"
+import { unstable_noStore as noStore } from "next/cache"
+import styles from "./home.module.css"
+
+export default async function DashboardPage() {
+  noStore()
+  
+  const [
+    customersCount,
+    productsCount,
+    ordersCount,
+    salesData,
+    recentOrders,
+    recentSales,
+    lowStockProducts
+  ] = await Promise.all([
+    prisma.customer.count(),
+    prisma.product.count(),
+    prisma.order.count(),
+    prisma.sale.aggregate({ 
+      _sum: { totalAmount: true },
+      _count: true 
+    }),
+    prisma.order.findMany({
+      take: 6,
+      orderBy: { createdAt: 'desc' },
+      include: { customer: true }
+    }),
+    prisma.sale.findMany({
+      take: 6,
+      orderBy: { createdAt: 'desc' },
+      include: { customer: true }
+    }),
+    prisma.product.findMany({
+      where: { stock: { lte: 5 } },
+      orderBy: { stock: 'asc' },
+      take: 5
+    })
+  ])
+
+  const totalRevenue = Number(salesData._sum.totalAmount || 0)
+  const totalSales = salesData._count || 0
+
+  return (
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1>Dashboard</h1>
+          <p>Visão geral da sua óptica</p>
+        </div>
+        <span className={styles.dateBadge}>
+          {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </span>
+      </div>
+
+      {/* KPIs */}
+      <div className={styles.kpiGrid}>
+        <div className={styles.kpiCard}>
+          <div className={`${styles.kpiIcon} ${styles.blue}`}>
+            <DollarSign size={24} />
+          </div>
+          <div className={styles.kpiInfo}>
+            <span className={styles.kpiLabel}>Faturamento</span>
+            <span className={styles.kpiValue}>R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+        </div>
+
+        <div className={styles.kpiCard}>
+          <div className={`${styles.kpiIcon} ${styles.green}`}>
+            <Receipt size={24} />
+          </div>
+          <div className={styles.kpiInfo}>
+            <span className={styles.kpiLabel}>Vendas</span>
+            <span className={styles.kpiValue}>{totalSales}</span>
+          </div>
+        </div>
+
+        <div className={styles.kpiCard}>
+          <div className={`${styles.kpiIcon} ${styles.yellow}`}>
+            <Users size={24} />
+          </div>
+          <div className={styles.kpiInfo}>
+            <span className={styles.kpiLabel}>Clientes</span>
+            <span className={styles.kpiValue}>{customersCount}</span>
+          </div>
+        </div>
+
+        <div className={styles.kpiCard}>
+          <div className={`${styles.kpiIcon} ${styles.red}`}>
+            <ShoppingCart size={24} />
+          </div>
+          <div className={styles.kpiInfo}>
+            <span className={styles.kpiLabel}>Pedidos</span>
+            <span className={styles.kpiValue}>{ordersCount}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid: Vendas + Ações Rápidas */}
+      <div className={styles.mainGrid}>
+        {/* Vendas Recentes */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>
+              <Receipt size={18} />
+              Últimas Vendas
+            </h2>
+            <Link href="/sales" className={styles.viewAll} style={{ color: 'var(--accent-primary)', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600 }}>
+              Ver todas <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className={styles.cardBody}>
+            {recentSales.length === 0 ? (
+              <div className={styles.emptyState}>
+                <DollarSign size={32} style={{ opacity: 0.3 }} />
+                <p>Nenhuma venda registrada</p>
+              </div>
+            ) : (
+              recentSales.map((sale) => (
+                <div key={sale.id} className={styles.listItem}>
+                  <div className={styles.itemLeft}>
+                    <div className={styles.itemAvatar} style={{ background: 'var(--success)' }}>
+                      {sale.customer?.name?.charAt(0).toUpperCase() || 'A'}
+                    </div>
+                    <div className={styles.itemInfo}>
+                      <h4>{sale.customer?.name || 'Venda Avulsa'}</h4>
+                      <p>{new Date(sale.createdAt).toLocaleDateString('pt-BR')} • {sale.paymentMethod || 'PIX'}</p>
+                    </div>
+                  </div>
+                  <div className={styles.itemRight}>
+                    <span className={styles.itemValue}>R$ {Number(sale.totalAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    <span className={`${styles.statusBadge} ${sale.status === 'COMPLETED' ? styles.completed : styles.pending}`}>
+                      {sale.status === 'COMPLETED' ? 'Concluída' : 'Pendente'}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Ações Rápidas */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>
+              <TrendingUp size={18} />
+              Ações Rápidas
+            </h2>
+          </div>
+          <div className={styles.quickActions}>
+            <Link href="/sales/new" className={`${styles.actionBtn} ${styles.primary}`}>
+              <DollarSign size={20} />
+              Nova Venda
+            </Link>
+            <Link href="/customers/new" className={`${styles.actionBtn} ${styles.primary}`}>
+              <UserPlus size={20} />
+              Novo Cliente
+            </Link>
+            <Link href="/orders/new" className={`${styles.actionBtn} ${styles.secondary}`}>
+              <ShoppingCart size={20} />
+              Novo Pedido
+            </Link>
+            <Link href="/inventory" className={`${styles.actionBtn} ${styles.secondary}`}>
+              <Package size={20} />
+              Ver Estoque
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Grid: Pedidos + Alertas + Clientes */}
+      <div className={styles.bottomGrid}>
+        {/* Pedidos Recentes */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>
+              <ShoppingCart size={18} />
+              Pedidos
+            </h2>
+            <Link href="/orders" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600 }}>
+              Ver todos <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className={styles.cardBody}>
+            {recentOrders.length === 0 ? (
+              <div className={styles.emptyState}>
+                <ShoppingCart size={32} style={{ opacity: 0.3 }} />
+                <p>Nenhum pedido</p>
+              </div>
+            ) : (
+              recentOrders.map((order) => (
+                <div key={order.id} className={styles.listItem}>
+                  <div className={styles.itemLeft}>
+                    <div className={styles.itemAvatar} style={{ background: '#f59e0b' }}>
+                      {order.customer?.name?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                    <div className={styles.itemInfo}>
+                      <h4>#{order.id.slice(0, 8)} - {order.customer?.name || 'Cliente'}</h4>
+                      <p>{new Date(order.createdAt).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                  </div>
+                  <div className={styles.itemRight}>
+                    <span className={`${styles.statusBadge} ${styles[order.status?.toLowerCase()]}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Alertas de Estoque */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>
+              <AlertTriangle size={18} style={{ color: '#f59e0b' }} />
+              Alertas
+            </h2>
+          </div>
+          <div className={styles.cardBody}>
+            {lowStockProducts.length === 0 ? (
+              <div className={styles.emptyState}>
+                <Package size={32} style={{ opacity: 0.3 }} />
+                <p>Estoque OK</p>
+              </div>
+            ) : (
+              lowStockProducts.map((product) => (
+                <div key={product.id} className={styles.alertItem}>
+                  <div className={`${styles.alertIcon} ${product.stock === 0 ? styles.danger : styles.warning}`}>
+                    <Package size={16} />
+                  </div>
+                  <div className={styles.alertInfo}>
+                    <h4>{product.name}</h4>
+                    <p>{product.category}</p>
+                  </div>
+                  <span className={`${styles.alertBadge} ${product.stock === 0 ? styles.out : styles.low}`}>
+                    {product.stock === 0 ? 'Esgotado' : `${product.stock} unid`}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Últimos Clientes */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>
+              <Users size={18} />
+              Clientes
+            </h2>
+            <Link href="/customers" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600 }}>
+              Ver todos <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className={styles.cardBody}>
+            {customersCount === 0 ? (
+              <div className={styles.emptyState}>
+                <Users size={32} style={{ opacity: 0.3 }} />
+                <p>Nenhum cliente</p>
+              </div>
+            ) : (
+              (await prisma.customer.findMany({
+                take: 5,
+                orderBy: { createdAt: 'desc' },
+                select: { id: true, name: true, phone: true, createdAt: true }
+              })).map((customer) => (
+                <div key={customer.id} className={styles.listItem}>
+                  <div className={styles.itemLeft}>
+                    <div className={styles.itemAvatar} style={{ background: '#3b82f6' }}>
+                      {customer.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className={styles.itemInfo}>
+                      <h4>{customer.name}</h4>
+                      <p>{customer.phone || 'Sem telefone'}</p>
+                    </div>
+                  </div>
+                  <div className={styles.itemRight}>
+                    <Link href={`/customers/${customer.id}`} style={{ color: 'var(--accent-primary)' }}>
+                      <Eye size={18} />
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

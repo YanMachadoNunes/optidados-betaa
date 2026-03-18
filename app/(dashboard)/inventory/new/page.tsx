@@ -1,23 +1,22 @@
 import Link from "next/link";
-import { createProduct } from "../../customers/actions"; // Ajuste o caminho se necessário
+import { ArrowLeft, Package } from "lucide-react";
+import { createProduct } from "../../customers/actions";
 import style from "./page.module.css";
 
 export default function NewProductPage() {
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
-        {/* Cabeçalho */}
         <div className={style.header}>
           <Link href="/inventory" className={style.backLink}>
-            ← Voltar para Estoque
+            <ArrowLeft size={18} />
+            Voltar para Estoque
           </Link>
           <h1 className={style.title}>Novo Produto</h1>
         </div>
 
-        {/* Formulário */}
         <div className={style.card}>
           <form action={createProduct} className={style.form}>
-            {/* Linha 1: Identificação */}
             <div className={style.row}>
               <div className={style.field}>
                 <label className={style.label}>Nome do Produto</label>
@@ -36,7 +35,7 @@ export default function NewProductPage() {
                   type="text"
                   placeholder="Ex: Lentes, Armações..."
                   required
-                  list="categories" // Sugestão simples
+                  list="categories"
                   className={style.input}
                 />
                 <datalist id="categories">
@@ -48,7 +47,6 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {/* Linha 2: Valores Financeiros */}
             <div className={style.row}>
               <div className={style.field}>
                 <label className={style.label}>Preço de Custo (R$)</label>
@@ -84,9 +82,22 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {/* Botão Salvar */}
+            <div className={style.field}>
+              <label className={style.label}>Código do Laboratório (opcional)</label>
+              <input
+                name="labCode"
+                type="text"
+                placeholder="Ex: LAB-2024-001234"
+                className={style.input}
+              />
+              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                Código de rastreamento do laboratório para lentes
+              </small>
+            </div>
+
             <div className={style.footer}>
               <button type="submit" className={style.submitButton}>
+                <Package size={18} />
                 Cadastrar Produto
               </button>
             </div>
