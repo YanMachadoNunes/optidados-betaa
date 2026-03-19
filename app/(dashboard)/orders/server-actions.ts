@@ -22,21 +22,14 @@ export async function createOrderAction(formData: FormData) {
   const frameId = formData.get("frameId") as string | null
   const paymentMethod = formData.get("paymentMethod") as string | null
   const prescriptionId = formData.get("prescriptionId") as string | null
-  const lensProductId = formData.get("items[0][productId]") as string
-  const lensQuantity = parseInt(formData.get("items[0][quantity]") as string) || 1
+  const totalAmountParam = formData.get("totalAmount") as string
+  const totalAmount = parseFloat(totalAmountParam) || 0
 
-  let totalAmount = 0
   const items: { productId: string; quantity: number; unitPrice: Prisma.Decimal }[] = []
 
   if (frameId) {
     const frame = await prisma.product.findUnique({ where: { id: frameId } })
     if (frame) {
-      totalAmount += Number(frame.price)
-      items.push({
-        productId: frameId,
-        quantity: 1,
-        unitPrice: new Prisma.Decimal(frame.price.toString()),
-      })
       await prisma.product.update({
         where: { id: frameId },
         data: { stock: { decrement: 1 } },
@@ -44,17 +37,30 @@ export async function createOrderAction(formData: FormData) {
     }
   }
 
-  if (lensProductId) {
-    const lens = await prisma.product.findUnique({ where: { id: lensProductId } })
-    if (lens) {
-      const lensTotal = Number(lens.price) * lensQuantity
-      totalAmount += lensTotal
-      items.push({
-        productId: lensProductId,
-        quantity: lensQuantity,
-        unitPrice: new Prisma.Decimal(lens.price.toString()),
-      })
+  let index = 0
+  while (formData.has(`items[${index}][productId]`)) {
+    const productId = formData.get(`items[${index}][productId]`) as string
+    const quantity = parseInt(formData.get(`items[${index}][quantity]`) as string) || 1
+
+    if (productId) {
+      const product = await prisma.product.findUnique({ where: { id: productId } })
+      if (product) {
+        items.push({
+          productId,
+          quantity,
+          unitPrice: new Prisma.Decimal(product.price.toString()),
+        })
+        await prisma.product.update({
+          where: { id: productId },
+          data: { stock: { decrement: quantity } },
+        })
+      }
     }
+    index++
+  }
+
+  if (items.length === 0 && !frameId) {
+    throw new Error("Adicione pelo menos um produto ao pedido")
   }
 
   await prisma.order.create({
@@ -65,6 +71,7 @@ export async function createOrderAction(formData: FormData) {
       paymentMethod: paymentMethod || null,
       totalAmount: new Prisma.Decimal(totalAmount),
       status: "PENDING",
+      frameId: frameId || null,
       items: { create: items },
     },
   })

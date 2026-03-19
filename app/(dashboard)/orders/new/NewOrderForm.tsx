@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react"
 import { createOrderAction } from "../server-actions"
 import styles from "./page.module.css"
 
@@ -20,6 +20,11 @@ type Product = {
   category: string
 }
 
+type OrderItem = {
+  productId: string
+  quantity: number
+}
+
 type NewOrderFormProps = {
   customers: Customer[]
   products: Product[]
@@ -30,9 +35,9 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
   const [selectedCustomerId, setSelectedCustomerId] = useState("")
   const [prescriptions, setPrescriptions] = useState<any[]>([])
   const [selectedPrescriptionId, setSelectedPrescriptionId] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("")
-  const [selectedProductId, setSelectedProductId] = useState("")
-  const [quantity, setQuantity] = useState(1)
+  const [paymentMethod, setPaymentMethod] = useState("")
+  const [items, setItems] = useState<OrderItem[]>([])
+  const [frameId, setFrameId] = useState("")
 
   useEffect(() => {
     if (selectedCustomerId) {
@@ -46,11 +51,40 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
     }
   }, [selectedCustomerId])
 
-  const filteredProducts = selectedCategory 
-    ? products.filter(p => p.category === selectedCategory)
-    : []
+  const addItem = () => {
+    setItems([...items, { productId: "", quantity: 1 }])
+  }
 
-  const selectedProduct = products.find(p => p.id === selectedProductId)
+  const removeItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index))
+  }
+
+  const updateItem = (index: number, field: keyof OrderItem, value: string | number) => {
+    const newItems = [...items]
+    newItems[index] = { ...newItems[index], [field]: value }
+    setItems(newItems)
+  }
+
+  const getProductsByCategory = (category: string) => {
+    return products.filter(p => p.category === category)
+  }
+
+  const getProduct = (id: string) => products.find(p => p.id === id)
+
+  const totalAmount = items.reduce((sum, item) => {
+    const product = getProduct(item.productId)
+    return sum + (product ? product.price * item.quantity : 0)
+  }, 0)
+
+  const frames = products.filter(p => p.category === "Armações")
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (items.length === 0 && !frameId) {
+      e.preventDefault()
+      alert("Adicione pelo menos um produto ao pedido")
+      return
+    }
+  }
 
   return (
     <div className={styles.container}>
@@ -63,17 +97,21 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
         </div>
       </div>
 
-      <form className={styles.form} action={createOrderAction}>
+      <form className={styles.form} action={createOrderAction} onSubmit={handleSubmit}>
+        <input type="hidden" name="customerId" value={selectedCustomerId} />
+        <input type="hidden" name="prescriptionId" value={selectedPrescriptionId} />
+        <input type="hidden" name="paymentMethod" value={paymentMethod} />
+        <input type="hidden" name="frameId" value={frameId} />
+        <input type="hidden" name="totalAmount" value={totalAmount} />
+
         <div className={styles.section}>
           <h2>Informações do Cliente</h2>
           <div className={styles.field}>
-            <label htmlFor="customerId">Cliente *</label>
+            <label>Cliente *</label>
             <select 
-              id="customerId" 
-              name="customerId" 
-              required
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
+              required
             >
               <option value="">Selecione um cliente</option>
               {customers.map((customer) => (
@@ -85,11 +123,9 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
           </div>
 
           {prescriptions.length > 0 && (
-            <div className={styles.field} style={{ marginTop: "1rem" }}>
-              <label htmlFor="prescriptionId">Receita do Cliente</label>
+            <div className={styles.field}>
+              <label>Receita do Cliente</label>
               <select 
-                id="prescriptionId" 
-                name="prescriptionId"
                 value={selectedPrescriptionId}
                 onChange={(e) => setSelectedPrescriptionId(e.target.value)}
               >
@@ -105,100 +141,132 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
         </div>
 
         <div className={styles.section}>
-          <h2>Detalhes do Pedido</h2>
-          <div className={styles.grid}>
+          <h2>Armação</h2>
+          {frames.length > 0 ? (
             <div className={styles.field}>
-              <label htmlFor="paymentMethod">Forma de Pagamento</label>
-              <select id="paymentMethod" name="paymentMethod">
-                <option value="">Selecione</option>
-                <option value="DINHEIRO">Dinheiro</option>
-                <option value="CREDITO">Cartão de Crédito</option>
-                <option value="DEBITO">Cartão de Débito</option>
-                <option value="PIX">PIX</option>
-                <option value="PARCELADO">Parcelado</option>
+              <label>Selecione a Armação</label>
+              <select 
+                value={frameId}
+                onChange={(e) => setFrameId(e.target.value)}
+              >
+                <option value="">Nenhuma armação</option>
+                {frames.map((frame) => (
+                  <option key={frame.id} value={frame.id}>
+                    {frame.name} - R$ {frame.price.toFixed(2)} (Estoque: {frame.stock})
+                  </option>
+                ))}
               </select>
             </div>
-          </div>
+          ) : (
+            <p className={styles.noProducts}>
+              Nenhuma armação cadastrada. <Link href="/inventory/new">Cadastrar armação</Link>
+            </p>
+          )}
         </div>
 
         <div className={styles.section}>
-          <h2>Produtos do Pedido</h2>
+          <div className={styles.sectionHeader}>
+            <h2>Produtos (Lentes e Outros)</h2>
+            <button type="button" onClick={addItem} className={styles.addBtn}>
+              <Plus size={16} />
+              Adicionar Produto
+            </button>
+          </div>
           
-          {products.length === 0 ? (
-            <div className={styles.noProducts}>
-              <p>Nenhum produto cadastrado.</p>
-              <Link href="/inventory/new" className={styles.addProductLink}>
-                Cadastrar Produto
-              </Link>
-            </div>
+          {items.length === 0 ? (
+            <p className={styles.noProducts}>
+              Nenhum produto adicionado. <button type="button" onClick={addItem} className={styles.linkBtn}>Adicionar produto</button>
+            </p>
           ) : (
-            <>
-              <div className={styles.field}>
-                <label htmlFor="category">Categoria</label>
-                <select 
-                  id="category"
-                  value={selectedCategory}
-                  onChange={(e) => {
-                    setSelectedCategory(e.target.value)
-                    setSelectedProductId("")
-                  }}
-                >
-                  <option value="">Selecione uma categoria</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-
-              {selectedCategory && (
-                <>
-                  <div className={styles.field} style={{ marginTop: "1rem" }}>
-                    <label htmlFor="productId">Produto</label>
-                    <select 
-                      id="productId"
-                      name="items[0][productId]"
-                      value={selectedProductId}
-                      onChange={(e) => setSelectedProductId(e.target.value)}
-                      required={!!selectedCategory}
-                    >
-                      <option value="">Selecione um produto</option>
-                      {filteredProducts.map((product) => (
-                        <option key={product.id} value={product.id}>
-                          {product.name} - R$ {product.price.toFixed(2)} (Estoque: {product.stock})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {selectedProduct && (
-                    <div className={styles.productSummary}>
-                      <div className={styles.summaryRow}>
-                        <span>Preço:</span>
-                        <strong>R$ {selectedProduct.price.toFixed(2)}</strong>
-                      </div>
-                      <div className={styles.summaryRow}>
-                        <span>Estoque:</span>
-                        <strong>{selectedProduct.stock} unidades</strong>
-                      </div>
+            <div className={styles.itemsList}>
+              {items.map((item, index) => {
+                const product = getProduct(item.productId)
+                const availableCategories = [...new Set(products.map(p => p.category))]
+                
+                return (
+                  <div key={index} className={styles.itemCard}>
+                    <div className={styles.itemHeader}>
+                      <span>Produto {index + 1}</span>
+                      <button type="button" onClick={() => removeItem(index)} className={styles.removeBtn}>
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                  )}
-
-                  <div className={styles.field} style={{ marginTop: "1rem" }}>
-                    <label htmlFor="quantity">Quantidade</label>
-                    <input
-                      type="number"
-                      id="quantity"
-                      name="items[0][quantity]"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      min={1}
-                      max={selectedProduct?.stock || 1}
-                    />
+                    
+                    <div className={styles.itemFields}>
+                      <div className={styles.field}>
+                        <label>Categoria</label>
+                        <select
+                          value={product?.category || ""}
+                          onChange={(e) => updateItem(index, "productId", "")}
+                        >
+                          <option value="">Selecione</option>
+                          {availableCategories.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {product?.category && (
+                        <div className={styles.field}>
+                          <label>Produto</label>
+                          <select
+                            value={item.productId}
+                            onChange={(e) => updateItem(index, "productId", e.target.value)}
+                            required
+                          >
+                            <option value="">Selecione</option>
+                            {getProductsByCategory(product.category).map(p => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} - R$ {p.price.toFixed(2)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                      
+                      {product && (
+                        <div className={styles.field}>
+                          <label>Quantidade</label>
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => updateItem(index, "quantity", Math.max(1, parseInt(e.target.value) || 1))}
+                            min={1}
+                            max={product.stock}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </>
-              )}
-            </>
+                )
+              })}
+            </div>
           )}
+        </div>
+
+        <div className={styles.section}>
+          <h2>Pagamento</h2>
+          <div className={styles.field}>
+            <label>Forma de Pagamento</label>
+            <select 
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            >
+              <option value="">Selecione</option>
+              <option value="DINHEIRO">Dinheiro</option>
+              <option value="CREDITO">Cartão de Crédito</option>
+              <option value="DEBITO">Cartão de Débito</option>
+              <option value="PIX">PIX</option>
+              <option value="PARCELADO">Parcelado</option>
+            </select>
+          </div>
+        </div>
+
+        <div className={styles.totalSection}>
+          <div className={styles.totalInfo}>
+            <span>Total do Pedido:</span>
+            <span className={styles.totalValue}>R$ {totalAmount.toFixed(2)}</span>
+          </div>
         </div>
 
         <div className={styles.actions}>
@@ -208,7 +276,7 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
           <button 
             type="submit" 
             className={styles.submitButton}
-            disabled={products.length === 0}
+            disabled={!selectedCustomerId || (items.length === 0 && !frameId)}
           >
             <Save size={20} />
             Criar Pedido
