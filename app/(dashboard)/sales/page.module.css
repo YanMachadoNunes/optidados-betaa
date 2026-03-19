@@ -152,9 +152,9 @@
 }
 
 .saleAmount {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--success);
-    font-size: 1.1rem;
+    font-size: 0.95rem;
 }
 
 .saleDate {
@@ -218,7 +218,7 @@
 }
 
 .totalValue {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--success);
 }
