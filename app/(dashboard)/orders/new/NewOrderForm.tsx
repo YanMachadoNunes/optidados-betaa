@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from "lucide-react"
 import { createOrderAction } from "../server-actions"
 import styles from "./page.module.css"
 
@@ -38,6 +38,7 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
   const [selectedPrescriptionId, setSelectedPrescriptionId] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("")
   const [items, setItems] = useState<OrderItem[]>([])
+  const [errors, setErrors] = useState<string[]>([])
 
   useEffect(() => {
     if (selectedCustomerId) {
@@ -53,6 +54,7 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
 
   const addItem = () => {
     setItems([...items, { productId: "", quantity: 1, category: "" }])
+    setErrors([])
   }
 
   const removeItem = (index: number) => {
@@ -88,6 +90,39 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
     return sum + (product ? product.price * item.quantity : 0)
   }, 0)
 
+  const validateForm = () => {
+    const newErrors: string[] = []
+
+    if (!selectedCustomerId) {
+      newErrors.push("Selecione um cliente")
+    }
+
+    if (items.length === 0) {
+      newErrors.push("Adicione pelo menos um produto")
+    } else {
+      const emptyProducts = items.filter(item => !item.productId)
+      if (emptyProducts.length > 0) {
+        newErrors.push("Selecione um produto para cada item")
+      }
+    }
+
+    if (!paymentMethod) {
+      newErrors.push("Selecione a forma de pagamento")
+    }
+
+    setErrors(newErrors)
+    return newErrors.length === 0
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    if (!validateForm()) {
+      e.preventDefault()
+    }
+  }
+
+  const hasValidProducts = items.length > 0 && items.every(item => item.productId)
+  const isValid = selectedCustomerId && hasValidProducts && paymentMethod
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -99,7 +134,18 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
         </div>
       </div>
 
-      <form className={styles.form} action={createOrderAction}>
+      {errors.length > 0 && (
+        <div className={styles.errorBox}>
+          <AlertCircle size={18} />
+          <div>
+            {errors.map((error, i) => (
+              <p key={i}>{error}</p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <form className={styles.form} action={createOrderAction} onSubmit={handleSubmit}>
         <input type="hidden" name="customerId" value={selectedCustomerId} />
         <input type="hidden" name="prescriptionId" value={selectedPrescriptionId} />
         <input type="hidden" name="paymentMethod" value={paymentMethod} />
@@ -110,7 +156,10 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
           <div className={styles.field}>
             <select 
               value={selectedCustomerId}
-              onChange={(e) => setSelectedCustomerId(e.target.value)}
+              onChange={(e) => {
+                setSelectedCustomerId(e.target.value)
+                setErrors([])
+              }}
               required
             >
               <option value="">Selecione um cliente</option>
@@ -218,7 +267,10 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
           <div className={styles.field}>
             <select 
               value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
+              onChange={(e) => {
+                setPaymentMethod(e.target.value)
+                setErrors([])
+              }}
             >
               <option value="">Selecione</option>
               <option value="DINHEIRO">Dinheiro</option>
@@ -244,7 +296,7 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
           <button 
             type="submit" 
             className={styles.submitButton}
-            disabled={!selectedCustomerId || items.length === 0}
+            disabled={!isValid}
           >
             <Save size={20} />
             Criar Pedido
