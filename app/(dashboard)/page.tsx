@@ -80,18 +80,18 @@ export default async function DashboardPage() {
     READY: "Pronto",
     DELIVERED: "Entregue"
   }
-  const statusData = Object.entries(statusCount).map(([name, value]) => ({ 
-    name: statusLabels[name] || name, 
-    value 
+  const statusData = Object.entries(statusCount).map((name, value) => ({ 
+    name: statusLabels[name[0]] || name[0], 
+    value: name[1]
   }))
 
   const monthlyRevenue = [
-    { month: "Jan", revenue: Math.random() * 10000 + 5000 },
-    { month: "Fev", revenue: Math.random() * 10000 + 5000 },
-    { month: "Mar", revenue: Math.random() * 10000 + 5000 },
-    { month: "Abr", revenue: Math.random() * 10000 + 5000 },
-    { month: "Mai", revenue: Math.random() * 10000 + 5000 },
-    { month: "Jun", revenue: totalRevenue || Math.random() * 10000 + 5000 },
+    { month: "Jan", revenue: 0 },
+    { month: "Fev", revenue: 0 },
+    { month: "Mar", revenue: 0 },
+    { month: "Abr", revenue: 0 },
+    { month: "Mai", revenue: 0 },
+    { month: "Jun", revenue: 0 },
   ]
 
   return (

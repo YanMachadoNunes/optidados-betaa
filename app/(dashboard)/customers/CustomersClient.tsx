@@ -12,6 +12,8 @@ import {
   ArrowRight,
   User,
   Users,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 
 type Customer = {
@@ -32,12 +34,16 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
+const ITEMS_PER_PAGE = 12
+
 export default function CustomersClient({ initialCustomers }: { initialCustomers: Customer[] }) {
   const [searchTerm, setSearchTerm] = useState("")
   const [customers, setCustomers] = useState(initialCustomers)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     setCustomers(initialCustomers)
+    setCurrentPage(1)
   }, [initialCustomers])
 
   const filteredCustomers = customers.filter((customer) => {
@@ -50,6 +56,28 @@ export default function CustomersClient({ initialCustomers }: { initialCustomers
       customer.phone?.toLowerCase().includes(term)
     )
   })
+
+  const totalPages = Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const renderPageNumbers = () => {
+    const pages = []
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+        pages.push(i)
+      } else if (pages[pages.length - 1] !== "...") {
+        pages.push("...")
+      }
+    }
+    return pages
+  }
 
   return (
     <div className={style.container}>
@@ -81,7 +109,10 @@ export default function CustomersClient({ initialCustomers }: { initialCustomers
             type="text"
             placeholder="Buscar por nome, CPF, email ou telefone..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setCurrentPage(1)
+            }}
             className={style.searchInput}
           />
         </div>
@@ -93,7 +124,7 @@ export default function CustomersClient({ initialCustomers }: { initialCustomers
       </div>
 
       <div className={style.grid}>
-        {filteredCustomers.map((customer) => (
+        {paginatedCustomers.map((customer) => (
           <div key={customer.id} className={style.card}>
             <div className={style.cardTop}>
               <div className={style.avatar}>{getInitials(customer.name)}</div>
@@ -161,6 +192,46 @@ export default function CustomersClient({ initialCustomers }: { initialCustomers
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className={style.pagination}>
+          <button
+            className={style.pageBtn}
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft size={18} />
+          </button>
+
+          {renderPageNumbers().map((page, index) =>
+            page === "..." ? (
+              <span key={`ellipsis-${index}`} className={style.ellipsis}>...</span>
+            ) : (
+              <button
+                key={page}
+                className={`${style.pageBtn} ${currentPage === page ? style.active : ""}`}
+                onClick={() => goToPage(page as number)}
+              >
+                {page}
+              </button>
+            )
+          )}
+
+          <button
+            className={style.pageBtn}
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <p className={style.pageInfo}>
+          Página {currentPage} de {totalPages} • {filteredCustomers.length} clientes
+        </p>
+      )}
     </div>
   )
 }
