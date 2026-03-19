@@ -131,7 +131,7 @@ export default function SalesForm({ products, customers }: SalesFormProps) {
     }
   }
 
-  const pageNumbers = [];
+  const pageNumbers: (number | string)[] = [];
   for (let i = 1; i <= totalPages; i++) {
     if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
       pageNumbers.push(i);

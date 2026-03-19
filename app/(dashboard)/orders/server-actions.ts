@@ -8,26 +8,22 @@ import { redirect } from "next/navigation"
 export async function createOrderAction(formData: FormData) {
   let userId = ""
   
-  try {
-    const defaultUser = await prisma.user.findFirst()
-    if (!defaultUser) {
-      return { error: "Nenhum usuário encontrado no sistema" }
-    }
-    userId = defaultUser.id
-  } catch (e) {
-    return { error: "Erro ao buscar usuário" }
+  const defaultUser = await prisma.user.findFirst()
+  if (!defaultUser) {
+    throw new Error("Nenhum usuário encontrado no sistema")
   }
+  userId = defaultUser.id
 
   const customerId = formData.get("customerId") as string
+  if (!customerId) {
+    throw new Error("Cliente é obrigatório")
+  }
+
   const frameId = formData.get("frameId") as string | null
   const paymentMethod = formData.get("paymentMethod") as string | null
   const prescriptionId = formData.get("prescriptionId") as string | null
   const lensProductId = formData.get("items[0][productId]") as string
   const lensQuantity = parseInt(formData.get("items[0][quantity]") as string) || 1
-
-  if (!customerId) {
-    return { error: "Cliente é obrigatório" }
-  }
 
   let totalAmount = 0
   const items: { productId: string; quantity: number; unitPrice: Prisma.Decimal }[] = []
@@ -82,7 +78,7 @@ export async function updateOrderAction(formData: FormData) {
   const status = formData.get("status") as string
 
   if (!orderId) {
-    return { error: "ID do pedido é obrigatório" }
+    throw new Error("ID do pedido é obrigatório")
   }
 
   await prisma.order.update({

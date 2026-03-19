@@ -142,17 +142,6 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          <div className={style.formGroup}>
-            <label htmlFor="role">Tipo de Conta</label>
-            <input
-              id="role"
-              type="text"
-              value={user?.role === "admin" ? "Administrador" : "Usuário"}
-              disabled
-            />
-            <p>Entre em contato para alterar o tipo de conta</p>
-          </div>
-
           <div className={style.actions}>
             <button
               type="button"
