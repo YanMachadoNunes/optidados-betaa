@@ -22,6 +22,8 @@ import {
   ResponsiveContainer,
   Tooltip
 } from "recharts"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 
 interface Sale {
   id: string
@@ -120,6 +122,47 @@ export default function FinancePage() {
     year: "numeric",
   })
 
+  const exportToPDF = async () => {
+    if (!data) return
+
+    const doc = new jsPDF()
+    
+    doc.setFontSize(20)
+    doc.setTextColor(40)
+    doc.text("Relatório Financeiro", 14, 22)
+    
+    doc.setFontSize(10)
+    doc.setTextColor(100)
+    doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")}`, 14, 30)
+
+    doc.setFontSize(12)
+    doc.setTextColor(40)
+    doc.text("Resumo", 14, 45)
+    
+    doc.setFontSize(10)
+    doc.text(`Receita Total: R$ ${data.totalRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 14, 55)
+    doc.text(`Total de Vendas: ${data.totalSales}`, 14, 62)
+    doc.text(`Ticket Médio: R$ ${data.averageSale.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 14, 69)
+    doc.text(`Vendas Hoje: ${data.todaySales}`, 14, 76)
+
+    const tableData = data.sales.map((sale) => [
+      new Date(sale.createdAt).toLocaleDateString("pt-BR"),
+      sale.customer?.name || "Venda Avulsa",
+      `R$ ${Number(sale.totalAmount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+    ])
+
+    autoTable(doc, {
+      startY: 90,
+      head: [["Data", "Cliente", "Valor"]],
+      body: tableData,
+      theme: "striped",
+      headStyles: { fillColor: [59, 130, 246] },
+      styles: { fontSize: 9 },
+    })
+
+    doc.save("relatorio-financeiro.pdf")
+  }
+
   if (loading) {
     return (
       <div className={style.container}>
@@ -140,6 +183,12 @@ export default function FinancePage() {
           </p>
         </div>
         <div className={style.headerActions}>
+          {!isEmpty && (
+            <button onClick={exportToPDF} className={style.secondaryButton}>
+              <Download size={18} />
+              Exportar PDF
+            </button>
+          )}
           <Link href="/sales/new" className={style.primaryButton}>
             <Plus size={18} />
             Nova Venda

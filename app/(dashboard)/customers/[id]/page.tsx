@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { deleteCustomer } from "../actions";
 import style from "./page.module.css";
 import { unstable_noStore as noStore } from "next/cache";
-import { Eye, Phone, Mail, FileText, Calendar, User, Edit2, Trash2, Plus } from "lucide-react";
+import { Eye, Phone, Mail, FileText, Calendar, User, Edit2, Trash2, Plus, MapPin } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -101,6 +101,19 @@ export default async function CustomerDetailsPage({ params }: Props) {
                 <Calendar size={16} />
                 <span>Desde {new Date(customer.createdAt).toLocaleDateString("pt-BR")}</span>
               </div>
+              {(customer.address || customer.city || customer.state) && (
+                <div className={style.infoItem}>
+                  <MapPin size={16} />
+                  <span>
+                    {customer.address || ""}
+                    {customer.address && (customer.city || customer.state) && ", "}
+                    {customer.city || ""}
+                    {customer.city && customer.state && " - "}
+                    {customer.state || ""}
+                    {customer.zipCode && ` (${customer.zipCode})`}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className={style.infoColumn}>

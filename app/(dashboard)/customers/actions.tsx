@@ -14,26 +14,33 @@ export async function createCustomer(formData: FormData) {
   const email = formData.get("email") as string;
   const phone = formData.get("phone") as string;
   const cpf = formData.get("cpf") as string;
+  const address = formData.get("address") as string;
+  const city = formData.get("city") as string;
+  const state = formData.get("state") as string;
+  const zipCode = formData.get("zipCode") as string;
 
   try {
-    // Tenta materializar a energia em dados
     await prisma.customer.create({
-      data: { name, email, phone, cpf },
+      data: { 
+        name, 
+        email: email || null, 
+        phone: phone || null, 
+        cpf: cpf || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        zipCode: zipCode || null,
+      },
     });
   } catch (error) {
-    // Se o erro for de unicidade (P2002)
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
-        // Em Server Actions, você pode retornar um objeto com o erro
-        // para o seu componente de formulário exibir uma mensagem.
         throw new Error("Este CPF já está cadastrado no sistema.");
       }
     }
-    // Se for outro erro, lança para o Next.js tratar
     throw error;
   }
 
-  // Só chega aqui se a criação deu certo
   revalidatePath("/customers");
   redirect("/customers");
 }
@@ -56,20 +63,33 @@ export async function deleteCustomer(id: string) {
 // app/customers/actions.ts
 
 export async function updateCustomer(formData: FormData) {
-  const id = formData.get("id") as string; // O ID vem escondido no formulário
+  const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const phone = formData.get("phone") as string;
   const cpf = formData.get("cpf") as string;
+  const address = formData.get("address") as string;
+  const city = formData.get("city") as string;
+  const state = formData.get("state") as string;
+  const zipCode = formData.get("zipCode") as string;
 
   await prisma.customer.update({
     where: { id },
-    data: { name, email, phone, cpf },
+    data: { 
+      name, 
+      email: email || null, 
+      phone: phone || null, 
+      cpf: cpf || null,
+      address: address || null,
+      city: city || null,
+      state: state || null,
+      zipCode: zipCode || null,
+    },
   });
 
   revalidatePath("/customers");
-  revalidatePath(`/customers/${id}`); // Atualiza também a página de detalhes
-  redirect(`/customers/${id}`); // Volta para o Dossiê do cliente atualizado
+  revalidatePath(`/customers/${id}`);
+  redirect(`/customers/${id}`);
 }
 
 // Adicione isso no final de app/customers/actions.ts

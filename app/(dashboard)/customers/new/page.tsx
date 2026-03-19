@@ -1,12 +1,11 @@
 import { createCustomer } from "../actions";
 import Link from "next/link";
-import style from "./page.module.css"; // Importando o estilo local corretamente
+import style from "./page.module.css";
 
 export default function NewCustomerPage() {
   return (
     <div className={style.pageWrapper}>
       <div className={style.container}>
-        {/* Cabeçalho */}
         <div className={style.header}>
           <Link href="/customers" className={style.backLink}>
             ← Voltar para Lista
@@ -14,12 +13,10 @@ export default function NewCustomerPage() {
           <h1 className={style.title}>Cadastrar Novo Cliente</h1>
         </div>
 
-        {/* O Card Branco Flutuante (Formulário do Império) */}
         <div className={style.formCard}>
           <form action={createCustomer} className={style.formGrid}>
-            {/* Campo Nome */}
             <div className={style.formGroup}>
-              <label className={style.label}>Nome Completo</label>
+              <label className={style.label}>Nome Completo *</label>
               <input
                 name="name"
                 type="text"
@@ -29,14 +26,12 @@ export default function NewCustomerPage() {
               />
             </div>
 
-            {/* Linha Dupla: Email e Telefone */}
             <div className={style.row}>
               <div className={style.formGroup}>
                 <label className={style.label}>E-mail</label>
                 <input
                   name="email"
                   type="email"
-                  required
                   className={style.input}
                   placeholder="joao@email.com"
                 />
@@ -52,18 +47,59 @@ export default function NewCustomerPage() {
               </div>
             </div>
 
-            {/* Campo CPF */}
+            <div className={style.row}>
+              <div className={style.formGroup}>
+                <label className={style.label}>CPF</label>
+                <input
+                  name="cpf"
+                  type="text"
+                  className={style.input}
+                  placeholder="000.000.000-00"
+                />
+              </div>
+              <div className={style.formGroup}>
+                <label className={style.label}>CEP</label>
+                <input
+                  name="zipCode"
+                  type="text"
+                  className={style.input}
+                  placeholder="00000-000"
+                />
+              </div>
+            </div>
+
             <div className={style.formGroup}>
-              <label className={style.label}>CPF</label>
+              <label className={style.label}>Endereço</label>
               <input
-                name="cpf"
+                name="address"
                 type="text"
                 className={style.input}
-                placeholder="000.000.000-00"
+                placeholder="Rua, número, bairro"
               />
             </div>
 
-            {/* Botão de Ação */}
+            <div className={style.row}>
+              <div className={style.formGroup}>
+                <label className={style.label}>Cidade</label>
+                <input
+                  name="city"
+                  type="text"
+                  className={style.input}
+                  placeholder="Cidade"
+                />
+              </div>
+              <div className={style.formGroup}>
+                <label className={style.label}>Estado</label>
+                <input
+                  name="state"
+                  type="text"
+                  className={style.input}
+                  placeholder="SP"
+                  maxLength={2}
+                />
+              </div>
+            </div>
+
             <button type="submit" className={style.submitButton}>
               Salvar Cliente
             </button>

@@ -210,6 +210,17 @@ export default function SettingsPage() {
               </div>
               <ChevronRight size={20} />
             </button>
+
+            <button 
+              className={`${style.actionButton} ${style.borderTop}`}
+              onClick={() => router.push("/settings/store")}
+            >
+              <div className={style.actionInfo}>
+                <h4>Dados da Loja</h4>
+                <p>CNPJ, endereço e informações da empresa</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
           </div>
         </section>
 
