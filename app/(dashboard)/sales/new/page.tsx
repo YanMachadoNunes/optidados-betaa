@@ -3,6 +3,7 @@ import SalesForm from "./sales-form";
 import style from "./page.module.css";
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import { ShoppingCart } from "lucide-react";
 
 export default async function NewSalePage() {
   noStore();
@@ -26,9 +27,20 @@ export default async function NewSalePage() {
 
   return (
     <div className={style.pageWrapper}>
-      <Link href="/sales" className={style.backLink}>
-        ← Voltar para Histórico
-      </Link>
+      <div className={style.header}>
+        <div className={style.headerLeft}>
+          <Link href="/sales" className={style.backLink}>
+            ← Voltar
+          </Link>
+          <div>
+            <h1 className={style.title}>Nova Venda</h1>
+            <p className={style.subtitle}>
+              <ShoppingCart size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+              Selecione os produtos para adicionar ao carrinho
+            </p>
+          </div>
+        </div>
+      </div>
 
       <SalesForm products={products} customers={customers} />
     </div>

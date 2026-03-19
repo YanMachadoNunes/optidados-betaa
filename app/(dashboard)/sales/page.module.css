@@ -33,21 +33,27 @@
 .subtitle {
     color: var(--text-secondary);
     font-size: 0.95rem;
+    margin-top: 0.25rem;
 }
 
 .submitButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     background: var(--accent-primary);
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     border: none;
     font-weight: 600;
+    font-size: 1rem;
     text-decoration: none;
     transition: all 0.2s ease;
 }
 
 .submitButton:hover {
     background: var(--accent-hover);
+    transform: translateY(-1px);
 }
 
 /* CARD PRINCIPAL */
@@ -86,9 +92,9 @@
     background: var(--bg-hover);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 1rem;
     width: 100%;
     transition: all 0.2s ease;
 }
@@ -96,6 +102,7 @@
 .input:focus {
     outline: none;
     border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* TABELA */
@@ -111,24 +118,33 @@
 
 .table th {
     background: var(--bg-hover);
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     text-align: left;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     text-transform: uppercase;
     font-weight: 600;
+    letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border-color);
 }
 
 .table td {
-    padding: 1rem;
+    padding: 1.25rem;
     border-bottom: 1px solid var(--border-color);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-primary);
 }
 
-.table tr:hover {
+.table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
     background: var(--bg-hover);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .textRight {
@@ -136,62 +152,95 @@
 }
 
 .saleAmount {
-    font-family: monospace;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--success);
+    font-size: 1.1rem;
+}
+
+.saleDate {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.saleDate svg {
+    color: var(--text-muted);
+}
+
+.customerName {
+    font-weight: 500;
+}
+
+.paymentMethod {
+    color: var(--text-secondary);
+    text-transform: capitalize;
 }
 
 .statusCompleted {
     background: rgba(16, 185, 129, 0.1);
     color: #10b981;
-    padding: 4px 12px;
-    border-radius: 99px;
+    padding: 6px 14px;
+    border-radius: 20px;
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     display: inline-block;
 }
 
 .statusPending {
     background: rgba(245, 158, 11, 0.1);
     color: #f59e0b;
-    padding: 4px 12px;
-    border-radius: 99px;
+    padding: 6px 14px;
+    border-radius: 20px;
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     display: inline-block;
 }
 
-.submitButton {
-    background: var(--accent-primary);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    border: none;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.actions {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
 }
 
-.submitButton:hover {
-    background: var(--accent-hover);
+.totalInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.totalLabel {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.totalValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--success);
 }
 
 .exportButton {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: var(--success);
+    background: var(--accent-primary);
     color: white;
     padding: 0.875rem 1.5rem;
     border-radius: 8px;
     border: none;
     font-weight: 600;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .exportButton:hover:not(:disabled) {
-    filter: brightness(1.1);
+    background: var(--accent-hover);
+    transform: translateY(-1px);
 }
 
 .exportButton:disabled {
@@ -199,27 +248,16 @@
     cursor: not-allowed;
 }
 
-.actions {
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: flex-end;
-    border-top: 1px solid var(--border-color);
-    background: var(--bg-secondary);
-}
-
-.totalRow {
-    background: var(--bg-hover);
-}
-
-.totalRow td {
-    border-top: 2px solid var(--border-color);
-    padding: 1rem;
-}
-
 .emptyState {
-    padding: 2rem;
+    padding: 4rem 2rem;
     text-align: center;
     color: var(--text-muted);
+}
+
+.emptyIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
 }
 
 @media (max-width: 768px) {
@@ -238,9 +276,7 @@
         font-size: 1.5rem;
     }
     
-    .submitButton,
-    .exportButton {
-        width: 100%;
+    .submitButton {
         justify-content: center;
     }
     
@@ -259,17 +295,31 @@
     }
     
     .table {
-        min-width: 600px;
+        min-width: 500px;
     }
     
     .table th,
     .table td {
-        padding: 0.75rem;
+        padding: 0.875rem;
         font-size: 0.85rem;
+    }
+    
+    .saleAmount {
+        font-size: 1rem;
     }
     
     .actions {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 1rem;
+    }
+    
+    .totalInfo {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .exportButton {
+        width: 100%;
+        justify-content: center;
     }
 }

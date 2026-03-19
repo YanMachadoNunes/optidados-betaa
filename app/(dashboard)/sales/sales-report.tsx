@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileText, Calendar } from "lucide-react";
+import { Download, Calendar } from "lucide-react";
 import styles from "./page.module.css";
 
 type Sale = {
@@ -63,33 +63,54 @@ export default function SalesReport({ sales }: SalesReportProps) {
 
   const totalGeral = filteredSales.reduce((acc, s) => acc + Number(s.totalAmount), 0);
 
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const paymentLabels: Record<string, string> = {
+    DINHEIRO: "Dinheiro",
+    CREDITO: "Cartão de Crédito",
+    DEBITO: "Cartão de Débito",
+    PIX: "PIX",
+    PARCELADO: "Parcelado",
+  };
+
   return (
-    <>
-      <div className={styles.card}>
-        <div className={styles.filterSection}>
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label className={styles.label}>Data Inicial</label>
-              <input
-                type="date"
-                className={styles.input}
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Data Final</label>
-              <input
-                type="date"
-                className={styles.input}
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
+    <div className={styles.card}>
+      <div className={styles.filterSection}>
+        <div className={styles.row}>
+          <div className={styles.field}>
+            <label className={styles.label}>Data Inicial</label>
+            <input
+              type="date"
+              className={styles.input}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label}>Data Final</label>
+            <input
+              type="date"
+              className={styles.input}
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
           </div>
         </div>
+      </div>
 
-        <div className={styles.tableContainer}>
+      <div className={styles.tableContainer}>
+        {filteredSales.length === 0 ? (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>📋</div>
+            <p>Nenhuma venda encontrada</p>
+          </div>
+        ) : (
           <table className={styles.table}>
             <thead>
               <tr>
@@ -104,61 +125,52 @@ export default function SalesReport({ sales }: SalesReportProps) {
               {filteredSales.map((sale) => (
                 <tr key={sale.id}>
                   <td>
-                    {new Date(sale.createdAt).toLocaleDateString("pt-BR")}
+                    <div className={styles.saleDate}>
+                      <Calendar size={16} />
+                      {formatDate(sale.createdAt)}
+                    </div>
                   </td>
-                  <td>{sale.customer?.name || "Venda Avulsa"}</td>
-                  <td>{sale.paymentMethod || "-"}</td>
+                  <td className={styles.customerName}>
+                    {sale.customer?.name || "Venda Avulsa"}
+                  </td>
+                  <td className={styles.paymentMethod}>
+                    {sale.paymentMethod ? paymentLabels[sale.paymentMethod] || sale.paymentMethod : "-"}
+                  </td>
                   <td>
                     <span className={sale.status === "COMPLETED" ? styles.statusCompleted : styles.statusPending}>
                       {sale.status === "COMPLETED" ? "Concluída" : "Pendente"}
                     </span>
                   </td>
                   <td className={styles.textRight}>
-                    R${" "}
-                    {Number(sale.totalAmount ?? 0).toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                    })}
+                    <span className={styles.saleAmount}>
+                      R$ {Number(sale.totalAmount ?? 0).toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                      })}
+                    </span>
                   </td>
                 </tr>
               ))}
             </tbody>
-            {filteredSales.length > 0 && (
-              <tfoot>
-                <tr className={styles.totalRow}>
-                  <td colSpan={4} className={styles.textRight}>
-                    <strong>Total:</strong>
-                  </td>
-                  <td className={styles.textRight}>
-                    <strong>R$ {totalGeral.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong>
-                  </td>
-                </tr>
-              </tfoot>
-            )}
           </table>
-          {filteredSales.length === 0 && (
-            <p className={styles.emptyState}>
-              Nenhuma venda encontrada.
-            </p>
-          )}
-        </div>
-
-        <div className={styles.actions}>
-          <button 
-            className={styles.exportButton} 
-            onClick={handleExport}
-            disabled={loading}
-          >
-            {loading ? (
-              "Exportando..."
-            ) : (
-              <>
-                <Download size={18} />
-                Exportar Relatório
-              </>
-            )}
-          </button>
-        </div>
+        )}
       </div>
-    </>
+
+      <div className={styles.actions}>
+        <div className={styles.totalInfo}>
+          <span className={styles.totalLabel}>Total:</span>
+          <span className={styles.totalValue}>
+            R$ {totalGeral.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          </span>
+        </div>
+        <button 
+          className={styles.exportButton} 
+          onClick={handleExport}
+          disabled={loading || filteredSales.length === 0}
+        >
+          <Download size={18} />
+          {loading ? "Exportando..." : "Exportar CSV"}
+        </button>
+      </div>
+    </div>
   );
 }
