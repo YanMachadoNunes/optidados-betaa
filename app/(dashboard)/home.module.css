@@ -110,6 +110,10 @@
     margin-bottom: 1.5rem;
 }
 
+.chartContainer {
+    padding: 1rem;
+}
+
 /* Cards genéricos */
 .card {
     background: var(--bg-card);

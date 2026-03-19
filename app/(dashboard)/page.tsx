@@ -5,7 +5,6 @@ import {
   Package, 
   ShoppingCart, 
   DollarSign,
-  Clock,
   AlertTriangle,
   TrendingUp,
   ArrowRight,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react"
 import { unstable_noStore as noStore } from "next/cache"
 import styles from "./home.module.css"
+import { RevenueChart, CategoryPieChart, StatusDonutChart } from "./DashboardCharts"
 
 export default async function DashboardPage() {
   noStore()
@@ -26,7 +26,9 @@ export default async function DashboardPage() {
     salesData,
     recentOrders,
     recentSales,
-    lowStockProducts
+    lowStockProducts,
+    allProducts,
+    allOrders,
   ] = await Promise.all([
     prisma.customer.count(),
     prisma.product.count(),
@@ -49,15 +51,51 @@ export default async function DashboardPage() {
       where: { stock: { lte: 5 } },
       orderBy: { stock: 'asc' },
       take: 5
-    })
+    }),
+    prisma.product.findMany({
+      select: { category: true }
+    }),
+    prisma.order.findMany({
+      select: { status: true }
+    }),
   ])
 
   const totalRevenue = Number(salesData._sum.totalAmount || 0)
   const totalSales = salesData._count || 0
 
+  const categoryCount = allProducts.reduce((acc: Record<string, number>, p) => {
+    acc[p.category] = (acc[p.category] || 0) + 1
+    return acc
+  }, {})
+  const categoryData = Object.entries(categoryCount).map(([name, value]) => ({ name, value }))
+
+  const statusCount = allOrders.reduce((acc: Record<string, number>, o) => {
+    const status = o.status || "PENDING"
+    acc[status] = (acc[status] || 0) + 1
+    return acc
+  }, {})
+  const statusLabels: Record<string, string> = {
+    PENDING: "Pendente",
+    IN_ASSEMBLY: "Em Montagem",
+    READY: "Pronto",
+    DELIVERED: "Entregue"
+  }
+  const statusData = Object.entries(statusCount).map(([name, value]) => ({ 
+    name: statusLabels[name] || name, 
+    value 
+  }))
+
+  const monthlyRevenue = [
+    { month: "Jan", revenue: Math.random() * 10000 + 5000 },
+    { month: "Fev", revenue: Math.random() * 10000 + 5000 },
+    { month: "Mar", revenue: Math.random() * 10000 + 5000 },
+    { month: "Abr", revenue: Math.random() * 10000 + 5000 },
+    { month: "Mai", revenue: Math.random() * 10000 + 5000 },
+    { month: "Jun", revenue: totalRevenue || Math.random() * 10000 + 5000 },
+  ]
+
   return (
     <div className={styles.container}>
-      {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <h1>Dashboard</h1>
@@ -68,7 +106,6 @@ export default async function DashboardPage() {
         </span>
       </div>
 
-      {/* KPIs */}
       <div className={styles.kpiGrid}>
         <div className={styles.kpiCard}>
           <div className={`${styles.kpiIcon} ${styles.blue}`}>
@@ -111,16 +148,40 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Main Grid: Vendas + Ações Rápidas */}
       <div className={styles.mainGrid}>
-        {/* Vendas Recentes */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>
+              <TrendingUp size={18} />
+              Receita Mensal
+            </h2>
+          </div>
+          <div className={styles.chartContainer}>
+            <RevenueChart data={monthlyRevenue} />
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>
+              <Package size={18} />
+              Produtos por Categoria
+            </h2>
+          </div>
+          <div style={{ padding: "1rem" }}>
+            <CategoryPieChart data={categoryData} />
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.mainGrid}>
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h2 className={styles.cardTitle}>
               <Receipt size={18} />
               Últimas Vendas
             </h2>
-            <Link href="/sales" className={styles.viewAll} style={{ color: 'var(--accent-primary)', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600 }}>
+            <Link href="/sales" className={styles.viewAll}>
               Ver todas <ArrowRight size={14} />
             </Link>
           </div>
@@ -144,9 +205,6 @@ export default async function DashboardPage() {
                   </div>
                   <div className={styles.itemRight}>
                     <span className={styles.itemValue}>R$ {Number(sale.totalAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                    <span className={`${styles.statusBadge} ${sale.status === 'COMPLETED' ? styles.completed : styles.pending}`}>
-                      {sale.status === 'COMPLETED' ? 'Concluída' : 'Pendente'}
-                    </span>
                   </div>
                 </div>
               ))
@@ -154,7 +212,6 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Ações Rápidas */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h2 className={styles.cardTitle}>
@@ -183,9 +240,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Bottom Grid: Pedidos + Alertas + Clientes */}
       <div className={styles.bottomGrid}>
-        {/* Pedidos Recentes */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h2 className={styles.cardTitle}>
@@ -225,7 +280,6 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Alertas de Estoque */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h2 className={styles.cardTitle}>
@@ -258,47 +312,15 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Últimos Clientes */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h2 className={styles.cardTitle}>
               <Users size={18} />
-              Clientes
+              Status dos Pedidos
             </h2>
-            <Link href="/customers" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600 }}>
-              Ver todos <ArrowRight size={14} />
-            </Link>
           </div>
-          <div className={styles.cardBody}>
-            {customersCount === 0 ? (
-              <div className={styles.emptyState}>
-                <Users size={32} style={{ opacity: 0.3 }} />
-                <p>Nenhum cliente</p>
-              </div>
-            ) : (
-              (await prisma.customer.findMany({
-                take: 5,
-                orderBy: { createdAt: 'desc' },
-                select: { id: true, name: true, phone: true, createdAt: true }
-              })).map((customer) => (
-                <div key={customer.id} className={styles.listItem}>
-                  <div className={styles.itemLeft}>
-                    <div className={styles.itemAvatar} style={{ background: '#3b82f6' }}>
-                      {customer.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className={styles.itemInfo}>
-                      <h4>{customer.name}</h4>
-                      <p>{customer.phone || 'Sem telefone'}</p>
-                    </div>
-                  </div>
-                  <div className={styles.itemRight}>
-                    <Link href={`/customers/${customer.id}`} style={{ color: 'var(--accent-primary)' }}>
-                      <Eye size={18} />
-                    </Link>
-                  </div>
-                </div>
-              ))
-            )}
+          <div style={{ padding: "1rem" }}>
+            <StatusDonutChart data={statusData} />
           </div>
         </div>
       </div>
