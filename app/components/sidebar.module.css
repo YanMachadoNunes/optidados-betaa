@@ -69,6 +69,15 @@
     display: none;
 }
 
+.collapsed .logoText {
+    display: none;
+}
+
+.collapsed .header {
+    justify-content: center;
+    padding: 1.5rem 0.75rem;
+}
+
 .header {
     padding: 1.5rem;
     display: flex;
