@@ -1,37 +1,36 @@
-import { prisma } from "@/lib/prisma";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, Edit } from "lucide-react";
-import styles from "./page.module.css";
+import { prisma } from "@/lib/prisma"
+import Link from "next/link"
+import { notFound } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
+import styles from "./page.module.css"
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
 
 const statusLabels: Record<string, string> = {
   PENDING: "Pendente",
   IN_ASSEMBLY: "Em Montagem",
   READY: "Pronto",
   DELIVERED: "Entregue",
-};
+}
 
 const statusColors: Record<string, string> = {
   PENDING: "#f59e0b",
   IN_ASSEMBLY: "#3b82f6",
   READY: "#10b981",
   DELIVERED: "#6b7280",
-};
+}
 
 export default async function OrderDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }) {
-  const { id } = await params;
-  
+  const { id } = await params
+
   const order = await prisma.order.findUnique({
     where: { id },
     include: {
       customer: true,
-      frame: true,
       prescription: true,
       items: {
         include: {
@@ -39,10 +38,10 @@ export default async function OrderDetailPage({
         },
       },
     },
-  });
+  })
 
   if (!order) {
-    notFound();
+    notFound()
   }
 
   return (
@@ -87,8 +86,6 @@ export default async function OrderDetailPage({
             <p><strong>Valor Total:</strong> R$ {Number(order.totalAmount).toFixed(2)}</p>
           </div>
         </div>
-
-        {order.items.length > 0 && (
 
         {!order.prescription ? (
           <div className={styles.card}>
@@ -151,5 +148,5 @@ export default async function OrderDetailPage({
         )}
       </div>
     </div>
-  );
+  )
 }
