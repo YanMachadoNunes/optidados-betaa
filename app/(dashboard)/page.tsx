@@ -85,14 +85,29 @@ export default async function DashboardPage() {
     value: name[1]
   }))
 
-  const monthlyRevenue = [
-    { month: "Jan", revenue: 0 },
-    { month: "Fev", revenue: 0 },
-    { month: "Mar", revenue: 0 },
-    { month: "Abr", revenue: 0 },
-    { month: "Mai", revenue: 0 },
-    { month: "Jun", revenue: 0 },
-  ]
+  const allSales = await prisma.sale.findMany({
+    select: { totalAmount: true, createdAt: true }
+  })
+
+  const monthlyMap = new Map<string, number>()
+  allSales.forEach((sale) => {
+    const date = new Date(sale.createdAt)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    const current = monthlyMap.get(monthKey) || 0
+    monthlyMap.set(monthKey, current + Number(sale.totalAmount))
+  })
+
+  const monthlyRevenue = []
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date()
+    d.setMonth(d.getMonth() - i)
+    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const monthShort = d.toLocaleDateString("pt-BR", { month: "short" })
+    monthlyRevenue.push({
+      month: monthShort.charAt(0).toUpperCase() + monthShort.slice(1),
+      revenue: monthlyMap.get(monthKey) || 0
+    })
+  }
 
   return (
     <div className={styles.container}>
