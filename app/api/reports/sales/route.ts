@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const format = searchParams.get("format") || "csv";
+  const format = searchParams.get("format") || "json";
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
 
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
   });
 
-  if (format === "json") {
+  if (format === "json" || format === "json-view") {
     return NextResponse.json(sales);
   }
 

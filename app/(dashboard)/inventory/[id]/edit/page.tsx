@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { ArrowLeft, Save, Package } from "lucide-react"
+import { ArrowLeft, Save } from "lucide-react"
 import styles from "./page.module.css"
 
 export default function EditProductPage() {
@@ -14,7 +14,6 @@ export default function EditProductPage() {
     name: "",
     category: "",
     price: "",
-    costPrice: "",
     stock: "",
     labCode: "",
   })
@@ -32,7 +31,6 @@ export default function EditProductPage() {
             name: data.name,
             category: data.category,
             price: String(data.price),
-            costPrice: String(data.costPrice),
             stock: String(data.stock),
             labCode: data.labCode || "",
           })
@@ -59,7 +57,6 @@ export default function EditProductPage() {
           name: form.name,
           category: form.category,
           price: parseFloat(form.price.replace(",", ".")),
-          costPrice: parseFloat(form.costPrice.replace(",", ".")),
           stock: parseInt(form.stock),
           labCode: form.labCode || null,
         }),
@@ -114,18 +111,19 @@ export default function EditProductPage() {
 
             <div className={styles.formGroup}>
               <label>Categoria</label>
-              <select
+              <input
+                type="text"
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
+                list="categories"
                 required
-              >
-                <option value="">Selecione</option>
-                <option value="Armações">Armações</option>
-                <option value="Lentes">Lentes</option>
-                <option value="Acessórios">Acessórios</option>
-                <option value="Soluções">Soluções</option>
-                <option value="Outros">Outros</option>
-              </select>
+              />
+              <datalist id="categories">
+                <option value="Armações" />
+                <option value="Lentes Oftálmicas" />
+                <option value="Lentes de Contato" />
+                <option value="Acessórios" />
+              </datalist>
             </div>
 
             <div className={styles.formRow}>
@@ -142,27 +140,15 @@ export default function EditProductPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Preço de Custo (R$)</label>
+                <label>Estoque</label>
                 <input
                   type="number"
-                  step="0.01"
-                  value={form.costPrice}
-                  onChange={(e) => setForm({ ...form, costPrice: e.target.value })}
-                  placeholder="0,00"
+                  value={form.stock}
+                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                  min="0"
                   required
                 />
               </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Estoque</label>
-              <input
-                type="number"
-                value={form.stock}
-                onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                min="0"
-                required
-              />
             </div>
 
             <div className={styles.formGroup}>
