@@ -79,7 +79,7 @@ export function Sidebar() {
       >
         <div className={styles.header}>
           <div className={styles.logo}>
-            <div className={styles.logoIcon}>O</div>
+            <img src="/favicon.png" alt="OptiGestão" className={styles.logoIconImg} />
             <span className={styles.logoText}>OptiGestão</span>
           </div>
           {!isMobile && (
