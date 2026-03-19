@@ -68,7 +68,7 @@ export default function CustomersClient({ initialCustomers }: { initialCustomers
   }
 
   const renderPageNumbers = () => {
-    const pages = []
+    const pages: (number | string)[] = []
     for (let i = 1; i <= totalPages; i++) {
       if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
         pages.push(i)
