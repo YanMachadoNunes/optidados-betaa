@@ -8,7 +8,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 const prismaClientSingleton = () => {
-  return new PrismaClient().$extends(withAccelerate());
+  return new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  }).$extends(withAccelerate());
 };
 
 declare global {
