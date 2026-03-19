@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Edit, Package, Circle } from "lucide-react";
+import { ArrowLeft, Edit } from "lucide-react";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -88,39 +88,7 @@ export default async function OrderDetailPage({
           </div>
         </div>
 
-        {order.items.filter(item => item.product.category === "Armações").length > 0 && (
-          <div className={styles.card}>
-            <h2>Armação</h2>
-            {order.items
-              .filter(item => item.product.category === "Armações")
-              .map(item => (
-                <div key={item.id} className={styles.productInfo}>
-                  <Package size={32} />
-                  <div>
-                    <p><strong>{item.product.name}</strong></p>
-                    <p>R$ {Number(item.unitPrice).toFixed(2)}</p>
-                  </div>
-                </div>
-              ))}
-          </div>
-        )}
-
-        {order.items.filter(item => item.product.category !== "Armações").length > 0 && (
-          <div className={styles.card}>
-            <h2>Lentes</h2>
-            {order.items
-              .filter(item => item.product.category !== "Armações")
-              .map(item => (
-                <div key={item.id} className={styles.productInfo}>
-                  <Circle size={32} />
-                  <div>
-                    <p><strong>{item.product.name}</strong></p>
-                    <p>R$ {Number(item.unitPrice).toFixed(2)} x {item.quantity}</p>
-                  </div>
-                </div>
-              ))}
-          </div>
-        )}
+        {order.items.length > 0 && (
 
         {!order.prescription ? (
           <div className={styles.card}>
