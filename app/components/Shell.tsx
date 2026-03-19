@@ -1,21 +1,12 @@
-"use client";
+"use client"
 
-import { ReactNode, useState, useEffect } from "react";
-import { Sidebar } from "./Sidebar";
-import { SidebarProvider, useSidebar } from "../context/SidebarContext";
-import { Menu } from "lucide-react";
+import { ReactNode } from "react"
+import { Sidebar } from "./Sidebar"
+import { SidebarProvider, useSidebar } from "../context/SidebarContext"
+import { Menu } from "lucide-react"
 
 function MainContent({ children }: { children: ReactNode }) {
-  const { isCollapsed } = useSidebar();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const { toggleMobile, isMobile, isCollapsed } = useSidebar()
 
   return (
     <div
@@ -27,21 +18,22 @@ function MainContent({ children }: { children: ReactNode }) {
     >
       {isMobile && (
         <button
-          onClick={() => setMobileOpen(true)}
+          onClick={toggleMobile}
           style={{
             position: "fixed",
             top: "1rem",
             left: "1rem",
-            zIndex: 50,
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-color)",
+            zIndex: 60,
+            background: "var(--accent-primary)",
+            border: "none",
             borderRadius: "8px",
             padding: "0.5rem",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "var(--text-primary)",
+            color: "white",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
           }}
         >
           <Menu size={24} />
@@ -51,18 +43,18 @@ function MainContent({ children }: { children: ReactNode }) {
       <main
         style={{
           flex: 1,
-          marginLeft: isCollapsed ? "80px" : "260px",
+          marginLeft: isMobile ? 0 : (isCollapsed ? "80px" : "260px"),
           width: "100%",
           minHeight: "100vh",
-          transition: "margin-left 0.3s ease, background-color 0.3s ease",
+          transition: isMobile ? "none" : "margin-left 0.3s ease",
           overflowX: "hidden",
-          paddingTop: isMobile ? "4rem" : 0,
+          paddingTop: isMobile ? "5rem" : 0,
         }}
       >
         {children}
       </main>
     </div>
-  );
+  )
 }
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -70,5 +62,5 @@ export function Shell({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <MainContent>{children}</MainContent>
     </SidebarProvider>
-  );
+  )
 }
