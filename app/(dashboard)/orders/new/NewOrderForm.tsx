@@ -23,6 +23,7 @@ type Product = {
 type OrderItem = {
   productId: string
   quantity: number
+  category: string
 }
 
 type NewOrderFormProps = {
@@ -37,7 +38,6 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
   const [selectedPrescriptionId, setSelectedPrescriptionId] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("")
   const [items, setItems] = useState<OrderItem[]>([])
-  const [frameId, setFrameId] = useState("")
 
   useEffect(() => {
     if (selectedCustomerId) {
@@ -52,16 +52,28 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
   }, [selectedCustomerId])
 
   const addItem = () => {
-    setItems([...items, { productId: "", quantity: 1 }])
+    setItems([...items, { productId: "", quantity: 1, category: "" }])
   }
 
   const removeItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index))
   }
 
-  const updateItem = (index: number, field: keyof OrderItem, value: string | number) => {
+  const updateItemCategory = (index: number, category: string) => {
     const newItems = [...items]
-    newItems[index] = { ...newItems[index], [field]: value }
+    newItems[index] = { ...newItems[index], category, productId: "" }
+    setItems(newItems)
+  }
+
+  const updateItemProduct = (index: number, productId: string) => {
+    const newItems = [...items]
+    newItems[index] = { ...newItems[index], productId }
+    setItems(newItems)
+  }
+
+  const updateItemQuantity = (index: number, quantity: number) => {
+    const newItems = [...items]
+    newItems[index] = { ...newItems[index], quantity }
     setItems(newItems)
   }
 
@@ -76,16 +88,6 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
     return sum + (product ? product.price * item.quantity : 0)
   }, 0)
 
-  const frames = products.filter(p => p.category === "Armações")
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (items.length === 0 && !frameId) {
-      e.preventDefault()
-      alert("Adicione pelo menos um produto ao pedido")
-      return
-    }
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -97,17 +99,15 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
         </div>
       </div>
 
-      <form className={styles.form} action={createOrderAction} onSubmit={handleSubmit}>
+      <form className={styles.form} action={createOrderAction}>
         <input type="hidden" name="customerId" value={selectedCustomerId} />
         <input type="hidden" name="prescriptionId" value={selectedPrescriptionId} />
         <input type="hidden" name="paymentMethod" value={paymentMethod} />
-        <input type="hidden" name="frameId" value={frameId} />
         <input type="hidden" name="totalAmount" value={totalAmount} />
 
         <div className={styles.section}>
-          <h2>Informações do Cliente</h2>
+          <h2>Cliente</h2>
           <div className={styles.field}>
-            <label>Cliente *</label>
             <select 
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
@@ -124,7 +124,7 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
 
           {prescriptions.length > 0 && (
             <div className={styles.field}>
-              <label>Receita do Cliente</label>
+              <label>Receita</label>
               <select 
                 value={selectedPrescriptionId}
                 onChange={(e) => setSelectedPrescriptionId(e.target.value)}
@@ -141,105 +141,74 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
         </div>
 
         <div className={styles.section}>
-          <h2>Armação</h2>
-          {frames.length > 0 ? (
-            <div className={styles.field}>
-              <label>Selecione a Armação</label>
-              <select 
-                value={frameId}
-                onChange={(e) => setFrameId(e.target.value)}
-              >
-                <option value="">Nenhuma armação</option>
-                {frames.map((frame) => (
-                  <option key={frame.id} value={frame.id}>
-                    {frame.name} - R$ {frame.price.toFixed(2)} (Estoque: {frame.stock})
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <p className={styles.noProducts}>
-              Nenhuma armação cadastrada. <Link href="/inventory/new">Cadastrar armação</Link>
-            </p>
-          )}
-        </div>
-
-        <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2>Produtos (Lentes e Outros)</h2>
+            <h2>Produtos</h2>
             <button type="button" onClick={addItem} className={styles.addBtn}>
-              <Plus size={16} />
-              Adicionar Produto
+              <Plus size={18} />
             </button>
           </div>
           
           {items.length === 0 ? (
             <p className={styles.noProducts}>
-              Nenhum produto adicionado. <button type="button" onClick={addItem} className={styles.linkBtn}>Adicionar produto</button>
+              Nenhum produto adicionado.{" "}
+              <button type="button" onClick={addItem} className={styles.linkBtn}>
+                Adicionar
+              </button>
             </p>
           ) : (
             <div className={styles.itemsList}>
-              {items.map((item, index) => {
-                const product = getProduct(item.productId)
-                const availableCategories = [...new Set(products.map(p => p.category))]
-                
-                return (
-                  <div key={index} className={styles.itemCard}>
-                    <div className={styles.itemHeader}>
-                      <span>Produto {index + 1}</span>
-                      <button type="button" onClick={() => removeItem(index)} className={styles.removeBtn}>
-                        <Trash2 size={16} />
-                      </button>
+              {items.map((item, index) => (
+                <div key={index} className={styles.itemCard}>
+                  <div className={styles.itemHeader}>
+                    <span>Item {index + 1}</span>
+                    <button type="button" onClick={() => removeItem(index)} className={styles.removeBtn}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  
+                  <div className={styles.itemFields}>
+                    <div className={styles.field}>
+                      <select
+                        value={item.category}
+                        onChange={(e) => updateItemCategory(index, e.target.value)}
+                      >
+                        <option value="">Categoria</option>
+                        {categories.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
                     </div>
                     
-                    <div className={styles.itemFields}>
+                    {item.category && (
                       <div className={styles.field}>
-                        <label>Categoria</label>
                         <select
-                          value={product?.category || ""}
-                          onChange={(e) => updateItem(index, "productId", "")}
+                          value={item.productId}
+                          onChange={(e) => updateItemProduct(index, e.target.value)}
+                          required
                         >
-                          <option value="">Selecione</option>
-                          {availableCategories.map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
+                          <option value="">Produto</option>
+                          {getProductsByCategory(item.category).map(p => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} - R$ {p.price.toFixed(2)}
+                            </option>
                           ))}
                         </select>
                       </div>
-                      
-                      {product?.category && (
-                        <div className={styles.field}>
-                          <label>Produto</label>
-                          <select
-                            value={item.productId}
-                            onChange={(e) => updateItem(index, "productId", e.target.value)}
-                            required
-                          >
-                            <option value="">Selecione</option>
-                            {getProductsByCategory(product.category).map(p => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} - R$ {p.price.toFixed(2)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                      
-                      {product && (
-                        <div className={styles.field}>
-                          <label>Quantidade</label>
-                          <input
-                            type="number"
-                            value={item.quantity}
-                            onChange={(e) => updateItem(index, "quantity", Math.max(1, parseInt(e.target.value) || 1))}
-                            min={1}
-                            max={product.stock}
-                          />
-                        </div>
-                      )}
-                    </div>
+                    )}
+                    
+                    {item.productId && (
+                      <div className={styles.field}>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateItemQuantity(index, Math.max(1, parseInt(e.target.value) || 1))}
+                          min={1}
+                        />
+                      </div>
+                    )}
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -247,7 +216,6 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
         <div className={styles.section}>
           <h2>Pagamento</h2>
           <div className={styles.field}>
-            <label>Forma de Pagamento</label>
             <select 
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
@@ -262,12 +230,12 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
           </div>
         </div>
 
-        <div className={styles.totalSection}>
-          <div className={styles.totalInfo}>
-            <span>Total do Pedido:</span>
+        {totalAmount > 0 && (
+          <div className={styles.totalSection}>
+            <span>Total:</span>
             <span className={styles.totalValue}>R$ {totalAmount.toFixed(2)}</span>
           </div>
-        </div>
+        )}
 
         <div className={styles.actions}>
           <Link href="/orders" className={styles.cancelButton}>
@@ -276,7 +244,7 @@ export default function NewOrderForm({ customers, products, categories }: NewOrd
           <button 
             type="submit" 
             className={styles.submitButton}
-            disabled={!selectedCustomerId || (items.length === 0 && !frameId)}
+            disabled={!selectedCustomerId || items.length === 0}
           >
             <Save size={20} />
             Criar Pedido

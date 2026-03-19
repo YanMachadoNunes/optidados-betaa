@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ArrowLeft, Package } from "lucide-react";
-import { createProduct } from "../../customers/actions";
-import style from "./page.module.css";
+import Link from "next/link"
+import { ArrowLeft, Package } from "lucide-react"
+import { createProduct } from "../../customers/actions"
+import style from "./page.module.css"
 
 export default function NewProductPage() {
   return (
@@ -17,48 +17,36 @@ export default function NewProductPage() {
 
         <div className={style.card}>
           <form action={createProduct} className={style.form}>
-            <div className={style.row}>
-              <div className={style.field}>
-                <label className={style.label}>Nome do Produto</label>
-                <input
-                  name="name"
-                  type="text"
-                  placeholder="Ex: Lente Multifocal Premium"
-                  required
-                  className={style.input}
-                />
-              </div>
-              <div className={style.field}>
-                <label className={style.label}>Categoria</label>
-                <input
-                  name="category"
-                  type="text"
-                  placeholder="Ex: Lentes, Armações..."
-                  required
-                  list="categories"
-                  className={style.input}
-                />
-                <datalist id="categories">
-                  <option value="Lentes de Contato" />
-                  <option value="Armações" />
-                  <option value="Lentes Oftálmicas" />
-                  <option value="Acessórios" />
-                </datalist>
-              </div>
+            <div className={style.field}>
+              <label className={style.label}>Nome do Produto</label>
+              <input
+                name="name"
+                type="text"
+                placeholder="Ex: Lente Multifocal Premium"
+                required
+                className={style.input}
+              />
+            </div>
+
+            <div className={style.field}>
+              <label className={style.label}>Categoria</label>
+              <input
+                name="category"
+                type="text"
+                placeholder="Ex: Armações, Lentes Oftálmicas..."
+                required
+                list="categories"
+                className={style.input}
+              />
+              <datalist id="categories">
+                <option value="Armações" />
+                <option value="Lentes Oftálmicas" />
+                <option value="Lentes de Contato" />
+                <option value="Acessórios" />
+              </datalist>
             </div>
 
             <div className={style.row}>
-              <div className={style.field}>
-                <label className={style.label}>Preço de Custo (R$)</label>
-                <input
-                  name="costPrice"
-                  type="number"
-                  step="0.01"
-                  placeholder="0,00"
-                  required
-                  className={style.input}
-                />
-              </div>
               <div className={style.field}>
                 <label className={style.label}>Preço de Venda (R$)</label>
                 <input
@@ -90,9 +78,6 @@ export default function NewProductPage() {
                 placeholder="Ex: LAB-2024-001234"
                 className={style.input}
               />
-              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                Código de rastreamento do laboratório para lentes
-              </small>
             </div>
 
             <div className={style.footer}>
@@ -105,5 +90,5 @@ export default function NewProductPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
