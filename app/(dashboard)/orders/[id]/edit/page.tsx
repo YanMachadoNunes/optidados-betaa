@@ -1,18 +1,18 @@
-import { prisma } from "@/lib/prisma";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
-import { updateOrderAction } from "../../server-actions";
-import styles from "./page.module.css";
+import { prisma } from "@/lib/prisma"
+import Link from "next/link"
+import { notFound } from "next/navigation"
+import { ArrowLeft, Save } from "lucide-react"
+import { updateOrderAction } from "../../server-actions"
+import styles from "./page.module.css"
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
 
 export default async function EditOrderPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }) {
-  const { id } = await params;
+  const { id } = await params
 
   const order = await prisma.order.findUnique({
     where: { id },
@@ -23,11 +23,19 @@ export default async function EditOrderPage({
           product: true,
         },
       },
+      prescription: true,
     },
-  });
+  })
 
   if (!order) {
-    notFound();
+    notFound()
+  }
+
+  const statusLabels: Record<string, string> = {
+    PENDING: "Pendente",
+    IN_ASSEMBLY: "Em Montagem",
+    READY: "Pronto",
+    DELIVERED: "Entregue",
   }
 
   return (
@@ -61,9 +69,22 @@ export default async function EditOrderPage({
           <h2>Informações do Pedido</h2>
           <div className={styles.info}>
             <p><strong>Cliente:</strong> {order.customer.name}</p>
-            <p><strong>Armação:</strong> {order.items.find(i => i.product.category === "Armações")?.product.name || "Não selecionada"}</p>
             <p><strong>Valor Total:</strong> R$ {Number(order.totalAmount).toFixed(2)}</p>
+            <p><strong>Forma de Pagamento:</strong> {order.paymentMethod || "Não informada"}</p>
             <p><strong>Data:</strong> {new Date(order.createdAt).toLocaleDateString("pt-BR")}</p>
+          </div>
+        </div>
+
+        <div className={styles.section}>
+          <h2>Produtos</h2>
+          <div className={styles.productsList}>
+            {order.items.map((item) => (
+              <div key={item.id} className={styles.productItem}>
+                <span className={styles.productName}>{item.product.name}</span>
+                <span className={styles.productQty}>x{item.quantity}</span>
+                <span className={styles.productPrice}>R$ {Number(item.unitPrice).toFixed(2)}</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -78,5 +99,5 @@ export default async function EditOrderPage({
         </div>
       </form>
     </div>
-  );
+  )
 }
