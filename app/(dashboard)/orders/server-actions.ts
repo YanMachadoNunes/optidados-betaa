@@ -15,10 +15,6 @@ export async function createOrderAction(formData: FormData) {
   userId = defaultUser.id
 
   const customerId = formData.get("customerId") as string
-  if (!customerId) {
-    throw new Error("Cliente é obrigatório")
-  }
-
   const frameId = formData.get("frameId") as string | null
   const paymentMethod = formData.get("paymentMethod") as string | null
   const prescriptionId = formData.get("prescriptionId") as string | null
@@ -57,10 +53,6 @@ export async function createOrderAction(formData: FormData) {
       }
     }
     index++
-  }
-
-  if (items.length === 0 && !frameId) {
-    throw new Error("Adicione pelo menos um produto ao pedido")
   }
 
   await prisma.order.create({
