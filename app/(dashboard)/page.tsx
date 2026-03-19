@@ -97,7 +97,7 @@ export default async function DashboardPage() {
     monthlyMap.set(monthKey, current + Number(sale.totalAmount))
   })
 
-  const monthlyRevenue = []
+  const monthlyRevenue: { month: string; revenue: number }[] = []
   for (let i = 5; i >= 0; i--) {
     const d = new Date()
     d.setMonth(d.getMonth() - i)
