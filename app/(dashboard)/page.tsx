@@ -67,7 +67,7 @@ export default async function DashboardPage() {
     acc[p.category] = (acc[p.category] || 0) + 1
     return acc
   }, {})
-  const categoryData = Object.entries(categoryCount).map(([name, value]) => ({ name, value }))
+  const categoryData = Object.entries(categoryCount).map(([name, value]) => ({ name, value: value as number }))
 
   const statusCount = allOrders.reduce((acc: Record<string, number>, o) => {
     const status = o.status || "PENDING"
@@ -80,9 +80,9 @@ export default async function DashboardPage() {
     READY: "Pronto",
     DELIVERED: "Entregue"
   }
-  const statusData = Object.entries(statusCount).map((name, value) => ({ 
-    name: statusLabels[name[0]] || name[0], 
-    value: name[1]
+  const statusData = Object.entries(statusCount).map(([key, val]) => ({ 
+    name: statusLabels[key] || key, 
+    value: val as number
   }))
 
   const allSales = await prisma.sale.findMany({
