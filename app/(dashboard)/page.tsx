@@ -171,11 +171,11 @@ export default async function DashboardPage() {
               <UserPlus size={20} />
               Novo Cliente
             </Link>
-            <Link href="/orders/new" className={`${styles.actionBtn} ${styles.secondary}`}>
+            <Link href="/orders/new" className={`${styles.actionBtn} ${styles.primary}`}>
               <ShoppingCart size={20} />
               Novo Pedido
             </Link>
-            <Link href="/inventory" className={`${styles.actionBtn} ${styles.secondary}`}>
+            <Link href="/inventory" className={`${styles.actionBtn} ${styles.primary}`}>
               <Package size={20} />
               Ver Estoque
             </Link>
