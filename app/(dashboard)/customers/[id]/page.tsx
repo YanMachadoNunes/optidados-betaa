@@ -19,6 +19,12 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
+function formatRxValue(value: number): string {
+  if (value === 0) return "0,00";
+  const formatted = Math.abs(value).toFixed(2).replace(".", ",");
+  return value > 0 ? `+${formatted}` : `-${formatted}`;
+}
+
 export default async function CustomerDetailsPage({ params }: Props) {
   noStore();
   const { id } = await params;
@@ -148,15 +154,15 @@ export default async function CustomerDetailsPage({ params }: Props) {
                       <div className={style.rxGrades}>
                         <div className={style.rxEye}>
                           <span className={style.rxBadgeOD}>OD</span>
-                          <span>ESF: {Number(rx.odSpherical).toFixed(2)} | CIL: {Number(rx.odCylindrical).toFixed(2)} | E: {rx.odAxis}°</span>
+                          <span>ESF: {formatRxValue(Number(rx.odSpherical))} | CIL: {formatRxValue(Number(rx.odCylindrical))} | E: {rx.odAxis}°</span>
                         </div>
                         <div className={style.rxEye}>
                           <span className={style.rxBadgeOE}>OE</span>
-                          <span>ESF: {Number(rx.oeSpherical).toFixed(2)} | CIL: {Number(rx.oeCylindrical).toFixed(2)} | E: {rx.oeAxis}°</span>
+                          <span>ESF: {formatRxValue(Number(rx.oeSpherical))} | CIL: {formatRxValue(Number(rx.oeCylindrical))} | E: {rx.oeAxis}°</span>
                         </div>
                         {(Number(rx.additionOD) > 0 || Number(rx.additionOE) > 0) && (
                           <div className={style.rxAdd}>
-                            ADIÇÃO: OD {Number(rx.additionOD).toFixed(2)} | OE {Number(rx.additionOE).toFixed(2)}
+                            ADIÇÃO: OD {formatRxValue(Number(rx.additionOD))} | OE {formatRxValue(Number(rx.additionOE))}
                           </div>
                         )}
                       </div>

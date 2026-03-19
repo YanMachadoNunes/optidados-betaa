@@ -6,6 +6,12 @@ import styles from "./page.module.css"
 
 export const dynamic = "force-dynamic"
 
+function formatRxValue(value: number): string {
+  if (value === 0) return "0,00";
+  const formatted = Math.abs(value).toFixed(2).replace(".", ",");
+  return value > 0 ? `+${formatted}` : `-${formatted}`;
+}
+
 const statusLabels: Record<string, string> = {
   PENDING: "Pendente",
   IN_ASSEMBLY: "Em Montagem",
@@ -106,15 +112,15 @@ export default async function OrderDetailPage({
               <div className={styles.prescriptionGrid}>
                 <div>
                   <strong>Olho Direito (OD)</strong>
-                  <p>ESF: {order.prescription.odSpherical}</p>
-                  <p>CIL: {order.prescription.odCylindrical}</p>
-                  <p>Eixo: {order.prescription.odAxis}</p>
+                  <p>ESF: {formatRxValue(Number(order.prescription.odSpherical))}</p>
+                  <p>CIL: {formatRxValue(Number(order.prescription.odCylindrical))}</p>
+                  <p>Eixo: {order.prescription.odAxis}°</p>
                 </div>
                 <div>
                   <strong>Olho Esquerdo (OE)</strong>
-                  <p>ESF: {order.prescription.oeSpherical}</p>
-                  <p>CIL: {order.prescription.oeCylindrical}</p>
-                  <p>Eixo: {order.prescription.oeAxis}</p>
+                  <p>ESF: {formatRxValue(Number(order.prescription.oeSpherical))}</p>
+                  <p>CIL: {formatRxValue(Number(order.prescription.oeCylindrical))}</p>
+                  <p>Eixo: {order.prescription.oeAxis}°</p>
                 </div>
               </div>
             </div>
