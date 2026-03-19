@@ -17,6 +17,8 @@ import {
   Settings,
   ClipboardList,
   Crown,
+  Menu,
+  X,
 } from "lucide-react";
 import styles from "./sidebar.module.css";
 import { useSidebar } from "../context/SidebarContext";
@@ -45,6 +47,7 @@ export function Sidebar() {
   const router = useRouter();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const [user, setUser] = useState<UserData | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("optigestao_user");
@@ -59,23 +62,41 @@ export function Sidebar() {
     router.push("/login");
   };
 
+  const toggleMobile = () => setMobileOpen(!mobileOpen);
+  const closeMobile = () => setMobileOpen(false);
+
   const userName = user?.name || user?.email || "Usuário";
   const userInitial = user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U";
 
   return (
-    <aside
-      className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}
-    >
-      <div className={styles.header}>
-        <div className={styles.logo}>
-          <div className={styles.logoIcon}>O</div>
-          {!isCollapsed && <span className={styles.logoText}>OptiGestão</span>}
+    <>
+      <div 
+        className={`${styles.mobileOverlay} ${mobileOpen ? styles.active : ''}`}
+        onClick={closeMobile}
+      />
+      <aside
+        className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""} ${mobileOpen ? styles.mobileOpen : ""}`}
+      >
+        <div className={styles.mobileHeader}>
+          <div className={styles.logo}>
+            <div className={styles.logoIcon}>O</div>
+            <span className={styles.logoText}>OptiGestão</span>
+          </div>
+          <button onClick={closeMobile} className={styles.collapseBtn}>
+            <X size={20} />
+          </button>
         </div>
 
-        <button onClick={toggleSidebar} className={styles.collapseBtn}>
-          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
-      </div>
+        <div className={styles.header}>
+          <div className={styles.logo}>
+            <div className={styles.logoIcon}>O</div>
+            {!isCollapsed && <span className={styles.logoText}>OptiGestão</span>}
+          </div>
+
+          <button onClick={toggleSidebar} className={styles.collapseBtn}>
+            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+        </div>
 
       <nav className={styles.nav}>
         {menuItems.map((item) => {
@@ -88,6 +109,7 @@ export function Sidebar() {
               href={item.path}
               className={`${styles.link} ${isActive ? styles.active : ""}`}
               title={isCollapsed ? item.label : ""}
+              onClick={closeMobile}
             >
               <Icon size={20} />
               {!isCollapsed && (
@@ -115,7 +137,10 @@ export function Sidebar() {
           )}
         </div>
         <button 
-          onClick={handleLogout} 
+          onClick={() => {
+            handleLogout();
+            closeMobile();
+          }}
           className={styles.logoutBtn}
           title="Sair"
         >
@@ -124,5 +149,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }

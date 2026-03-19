@@ -358,17 +358,71 @@
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
+        padding-top: 5rem;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .headerLeft h1 {
+        font-size: 1.5rem;
     }
     
     .kpiGrid {
         grid-template-columns: 1fr;
     }
     
+    .kpiCard {
+        padding: 1rem;
+        min-height: 80px;
+    }
+    
+    .kpiIcon {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .kpiValue {
+        font-size: 1.1rem;
+    }
+    
     .bottomGrid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .quickActions {
         grid-template-columns: 1fr;
+    }
+    
+    .actionBtn {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8rem;
+    }
+    
+    .cardHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .listItem {
+        padding: 0.75rem;
+    }
+    
+    .itemAvatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .itemInfo h4 {
+        font-size: 0.85rem;
+    }
+    
+    .itemInfo p {
+        font-size: 0.75rem;
     }
 }

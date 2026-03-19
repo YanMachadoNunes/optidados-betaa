@@ -164,6 +164,7 @@
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
+    padding-top: 5rem;
   }
 
   .header {
@@ -172,11 +173,56 @@
     align-items: flex-start;
   }
 
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .addButton {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+
+  .statusFilters {
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    flex-wrap: nowrap;
+  }
+
+  .statusCard {
+    flex-shrink: 0;
+    padding: 0.75rem 1rem;
+    min-width: 80px;
+  }
+
+  .statusCount {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.75rem;
+  }
+
   .tableContainer {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .table {
-    min-width: 600px;
+    min-width: 700px;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .actions {
+    flex-direction: row;
+  }
+
+  .actionButton {
+    width: 2rem;
+    height: 2rem;
   }
 }

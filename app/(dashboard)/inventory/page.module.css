@@ -191,6 +191,7 @@
 @media (max-width: 768px) {
     .pageWrapper {
         padding: 1rem;
+        padding-top: 5rem;
     }
     
     .header {
@@ -203,7 +204,35 @@
         font-size: 1.5rem;
     }
     
+    .newButton {
+        width: 100%;
+        text-align: center;
+    }
+    
     .metricsRow {
+        grid-template-columns: 1fr;
+    }
+    
+    .card {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table {
+        min-width: 600px;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .form {
+        padding: 1.5rem;
+    }
+    
+    .formRow {
         grid-template-columns: 1fr;
     }
 }

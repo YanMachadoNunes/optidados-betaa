@@ -8,8 +8,27 @@
     position: fixed;
     left: 0;
     top: 0;
-    transition: width 0.3s ease;
+    transition: transform 0.3s ease, width 0.3s ease;
     z-index: 100;
+}
+
+.mobileOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+}
+
+.mobileHeader {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .collapsed {
@@ -253,4 +272,39 @@
 
 .logoutBtn:hover {
     background: rgba(239, 68, 68, 0.15);
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+    }
+    
+    .sidebar.mobileOpen {
+        transform: translateX(0);
+    }
+    
+    .mobileOverlay {
+        display: block;
+    }
+    
+    .mobileOverlay.active {
+        display: block;
+    }
+    
+    .mobileHeader {
+        display: flex;
+    }
+    
+    .collapseBtn {
+        display: none;
+    }
+    
+    .logoText {
+        font-size: 1.1rem;
+    }
+    
+    .link {
+        padding: 0.75rem 1rem;
+    }
 }
