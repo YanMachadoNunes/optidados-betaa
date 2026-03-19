@@ -15,38 +15,25 @@ export default async function NewOrderPage() {
     phone: c.phone,
   }))
 
-  const framesRaw = await prisma.product.findMany({
-    where: { category: "Armações" },
-    orderBy: { name: "asc" },
+  const allProducts = await prisma.product.findMany({
+    orderBy: [{ category: "asc" }, { name: "asc" }],
   })
 
-  const frames = framesRaw.map(f => ({
-    id: f.id,
-    name: f.name,
-    price: Number(f.price),
-    stock: f.stock,
+  const products = allProducts.map(p => ({
+    id: p.id,
+    name: p.name,
+    price: Number(p.price),
+    stock: p.stock,
+    category: p.category,
   }))
 
-  const lensesRaw = await prisma.product.findMany({
-    where: { 
-      category: {
-        in: ["Lentes Oftálmicas", "Lentes de Contato"]
-      }
-    },
-    orderBy: { name: "asc" },
-  })
-
-  const lenses = lensesRaw.map(l => ({
-    id: l.id,
-    name: l.name,
-    price: Number(l.price),
-  }))
+  const categories = Array.from(new Set(allProducts.map(p => p.category))) as string[]
 
   return (
     <NewOrderForm 
       customers={customers} 
-      frames={frames} 
-      lenses={lenses} 
+      products={products}
+      categories={categories}
     />
   )
 }
